@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/videos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/videos/**", "/images/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -19,9 +19,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,7 +77,10 @@ public class AdminVideoServiceImpl implements AdminVideoService {
 
     @Override
     public void deleteVideo(UUID videoId) {
-        adminVideoRepository.delete(findVideo(videoId));
+        Video video = findVideo(videoId);
+        adminVideoRepository.delete(video);
+        deleteStoredFile(video.getFilePath());
+        deleteStoredFile(video.getThumbnailPath());
     }
 
     @Override
@@ -88,8 +94,8 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     @Override
     public AdminVideoResponse uploadThumbnail(UUID videoId, MultipartFile file) {
         Video video = findVideo(videoId);
-        String filePath = storeFile(file, IMAGE_UPLOAD_DIR);
-        video.setThumbnailPath(filePath);
+        String filename = storeFile(file, IMAGE_UPLOAD_DIR);
+        video.setThumbnailPath(buildPublicFileUrl("images", filename));
 
         return adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
     }
@@ -97,8 +103,8 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     @Override
     public AdminVideoResponse uploadVideoFile(UUID videoId, MultipartFile file) {
         Video video = findVideo(videoId);
-        String filePath = storeFile(file, VIDEO_UPLOAD_DIR);
-        video.setFilePath(filePath);
+        String filename = storeFile(file, VIDEO_UPLOAD_DIR);
+        video.setFilePath(buildPublicFileUrl("videos", filename));
         video.setFileSize(file.getSize());
 
         return adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
@@ -156,6 +162,66 @@ public class AdminVideoServiceImpl implements AdminVideoService {
             throw new BadRequestException("Could not store file");
         }
 
-        return uploadDir + "/" + safeFilename;
+        return safeFilename;
+    }
+
+    private String buildPublicFileUrl(String resourcePath, String filename) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/")
+                .path(resourcePath)
+                .path("/")
+                .path(filename)
+                .toUriString();
+    }
+
+    private void deleteStoredFile(String filePath) {
+        if (filePath == null || filePath.isBlank()) {
+            return;
+        }
+
+        String uploadRelativePath = toUploadRelativePath(filePath);
+        if (uploadRelativePath == null) {
+            return;
+        }
+
+        Path rootPath = Paths.get("").toAbsolutePath().normalize();
+        Path targetPath = rootPath.resolve(uploadRelativePath).normalize();
+        Path uploadPath = rootPath.resolve("upload").normalize();
+
+        if (!targetPath.startsWith(uploadPath)) {
+            return;
+        }
+
+        try {
+            Files.deleteIfExists(targetPath);
+        } catch (IOException ex) {
+            throw new BadRequestException("Could not delete stored file");
+        }
+    }
+
+    private String toUploadRelativePath(String filePath) {
+        if (filePath.startsWith("upload/")) {
+            return filePath;
+        }
+
+        try {
+            URI uri = new URI(filePath);
+            String path = uri.getPath();
+            if (path == null) {
+                return null;
+            }
+
+            if (path.startsWith("/videos/")) {
+                return VIDEO_UPLOAD_DIR + "/" + path.substring("/videos/".length());
+            }
+
+            if (path.startsWith("/images/")) {
+                return IMAGE_UPLOAD_DIR + "/" + path.substring("/images/".length());
+            }
+        } catch (URISyntaxException ex) {
+            return null;
+        }
+
+        return null;
     }
 }
