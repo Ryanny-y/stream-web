@@ -1,7 +1,6 @@
 package com.streaming.backend.security;
 
 import com.streaming.backend.repositories.AuthRepository;
-import com.streaming.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
