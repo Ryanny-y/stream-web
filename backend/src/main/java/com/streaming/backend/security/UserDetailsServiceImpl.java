@@ -1,5 +1,6 @@
 package com.streaming.backend.security;
 
+import com.streaming.backend.repositories.AuthRepository;
 import com.streaming.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,12 +12,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final AuthRepository authRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        return authRepository
+                .findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
                 .map(UserPrincipal::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found: " + usernameOrEmail)
+                );
     }
 }
