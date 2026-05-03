@@ -1,6 +1,6 @@
 package com.streaming.backend.security;
 
-import com.streaming.backend.domain.entities.User;
+import com.streaming.backend.domain.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
