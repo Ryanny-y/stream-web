@@ -14,4 +14,6 @@ public interface PublicVideoService {
     List<PublicVideoResponse> getFeaturedVideos();
 
     List<PublicVideoResponse> getTrendingVideos();
+
+    List<PublicVideoResponse> searchVideos(String query);
 }

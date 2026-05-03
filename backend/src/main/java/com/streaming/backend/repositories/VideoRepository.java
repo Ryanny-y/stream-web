@@ -70,4 +70,40 @@ public interface VideoRepository extends JpaRepository<Video, UUID> {
             @Param("visibility") Visibility visibility,
             @Param("status") VideoStatus status
     );
+
+    @EntityGraph(attributePaths = {"categories", "uploadedBy"})
+    @Query("""
+            select distinct v
+            from Video v
+            join v.categories c
+            where c.categoryId = :categoryId
+              and v.visibility = :visibility
+              and v.status = :status
+            order by v.createdAt desc
+            """)
+    List<Video> findPublicVideosByCategoryId(
+            @Param("categoryId") Integer categoryId,
+            @Param("visibility") Visibility visibility,
+            @Param("status") VideoStatus status
+    );
+
+    @EntityGraph(attributePaths = {"categories", "uploadedBy"})
+    @Query("""
+            select distinct v
+            from Video v
+            left join v.categories c
+            where v.visibility = :visibility
+              and v.status = :status
+              and (
+                    lower(v.title) like lower(concat('%', :query, '%'))
+                    or lower(v.description) like lower(concat('%', :query, '%'))
+                    or lower(c.categoryName) like lower(concat('%', :query, '%'))
+              )
+            order by v.totalViews desc, v.createdAt desc
+            """)
+    List<Video> searchPublicVideos(
+            @Param("query") String query,
+            @Param("visibility") Visibility visibility,
+            @Param("status") VideoStatus status
+    );
 }

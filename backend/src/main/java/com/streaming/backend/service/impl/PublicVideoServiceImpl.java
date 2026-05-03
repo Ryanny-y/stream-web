@@ -60,6 +60,20 @@ public class PublicVideoServiceImpl implements PublicVideoService {
         ));
     }
 
+    @Override
+    public List<PublicVideoResponse> searchVideos(String query) {
+        String trimmedQuery = query == null ? "" : query.trim();
+        if (trimmedQuery.isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Search query is required");
+        }
+
+        return mapVideos(videoRepository.searchPublicVideos(
+                trimmedQuery,
+                Visibility.PUBLIC,
+                VideoStatus.ACTIVE
+        ));
+    }
+
     private List<PublicVideoResponse> mapVideos(List<Video> videos) {
         return videos.stream()
                 .map(videoMapper::toPublicVideoResponse)
