@@ -26,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Service
@@ -40,6 +41,8 @@ public class AuthServiceImpl implements AuthService {
     private final AuthMapper authMapper;
     private final JwtService jwtService;
     private final AdminLogService adminLogService;
+    private static final int MAX_FAILED_ATTEMPTS = 10;
+    private static final int LOCK_DURATION_HOURS = 1;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -69,6 +72,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional(noRollbackFor = ApiException.class)
     public AuthResponse login(LoginRequest request) {
         User user = authRepository
                 .findByUsernameOrEmail(request.getUsernameOrEmail(), request.getUsernameOrEmail())
@@ -84,6 +88,13 @@ public class AuthServiceImpl implements AuthService {
             throw new ApiException(HttpStatus.FORBIDDEN, "Account is not active.");
         }
 
+        if (isAccountLocked(user)) {
+            adminLogService.createLoginLog(user, request.getUsernameOrEmail(), false);
+            throw new ApiException(HttpStatus.FORBIDDEN, "Account is locked. Try again later.");
+        }
+
+        clearExpiredLock(user);
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -93,14 +104,48 @@ public class AuthServiceImpl implements AuthService {
             );
 
             String accessToken = jwtService.generateAccessToken(new UserPrincipal(user));
+            resetFailedAttempts(user);
             adminLogService.createLoginLog(user, request.getUsernameOrEmail(), true);
 
             return authMapper.toAuthResponse(user, accessToken);
         } catch (AuthenticationException ex) {
+            incrementFailedAttempts(user);
             adminLogService.createLoginLog(user, request.getUsernameOrEmail(), false);
+            if (isAccountLocked(user)) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "Account is locked. Try again in 1 hour.");
+            }
+
             throw new ApiException(HttpStatus.BAD_REQUEST, "Username/Email or Password is incorrect.");
         }
     }
+
+    private void incrementFailedAttempts(User user) {
+        Integer failedAttempts = user.getFailedAttempts();
+        int nextFailedAttempts = failedAttempts == null ? 1 : failedAttempts + 1;
+        user.setFailedAttempts(nextFailedAttempts);
+
+        if (nextFailedAttempts >= MAX_FAILED_ATTEMPTS) {
+            user.setLockedUntil(LocalDateTime.now().plusHours(LOCK_DURATION_HOURS));
+        }
+    }
+
+    private void resetFailedAttempts(User user) {
+        user.setFailedAttempts(0);
+        user.setLockedUntil(null);
+    }
+
+    private boolean isAccountLocked(User user) {
+        LocalDateTime lockedUntil = user.getLockedUntil();
+        return lockedUntil != null && lockedUntil.isAfter(LocalDateTime.now());
+    }
+
+    private void clearExpiredLock(User user) {
+        LocalDateTime lockedUntil = user.getLockedUntil();
+        if (lockedUntil != null && !lockedUntil.isAfter(LocalDateTime.now())) {
+            resetFailedAttempts(user);
+        }
+    }
+
     @Override
     public void logout(User user) {
         SecurityContextHolder.clearContext();
