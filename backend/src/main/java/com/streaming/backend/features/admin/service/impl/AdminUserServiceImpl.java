@@ -5,7 +5,9 @@ import com.streaming.backend.common.exceptions.ResourceNotFoundException;
 import com.streaming.backend.domain.Role;
 import com.streaming.backend.domain.User;
 import com.streaming.backend.domain.enums.RoleName;
+import com.streaming.backend.domain.enums.UserStatus;
 import com.streaming.backend.features.admin.dto.AdminUserResponse;
+import com.streaming.backend.features.admin.dto.AdminUserStatusResponse;
 import com.streaming.backend.features.admin.dto.UpdateUserRequest;
 import com.streaming.backend.features.admin.dto.UpdateUserRolesRequest;
 import com.streaming.backend.features.admin.dto.UpdateUserStatusRequest;
@@ -41,6 +43,18 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .sorted(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .map(adminUserMapper::toAdminUserResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AdminUserStatusResponse getUserStatus() {
+        return AdminUserStatusResponse.builder()
+                .totalUsers(adminUserRepository.count())
+                .totalActiveUsers(adminUserRepository.countByStatus(UserStatus.ACTIVE))
+                .suspendedUsers(adminUserRepository.countByStatus(UserStatus.SUSPENDED))
+                .bannedUsers(adminUserRepository.countByStatus(UserStatus.BANNED))
+                .systemAdmin(adminUserRepository.countDistinctByRoles_RoleName(RoleName.ADMIN))
+                .build();
     }
 
     @Override

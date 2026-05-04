@@ -1,6 +1,7 @@
 package com.streaming.backend.features.admin.controller;
 
 import com.streaming.backend.features.admin.dto.AdminUserResponse;
+import com.streaming.backend.features.admin.dto.AdminUserStatusResponse;
 import com.streaming.backend.features.admin.dto.UpdateUserRequest;
 import com.streaming.backend.features.admin.dto.UpdateUserRolesRequest;
 import com.streaming.backend.features.admin.dto.UpdateUserStatusRequest;
@@ -32,6 +33,11 @@ public class AdminUserController {
     @GetMapping
     public ResponseEntity<List<AdminUserResponse>> getUsers() {
         return ResponseEntity.ok(adminUserService.getUsers());
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<AdminUserStatusResponse> getUserStatus() {
+        return ResponseEntity.ok(adminUserService.getUserStatus());
     }
 
     @GetMapping("/{userId}")
