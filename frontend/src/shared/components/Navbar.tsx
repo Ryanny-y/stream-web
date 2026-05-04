@@ -12,7 +12,7 @@ interface NavLink {
 const navLinks: NavLink[] = [
   { label: 'Home', to: '/' },
   { label: 'Browse', to: '/browse' },
-  { label: 'Categories', to: '/browse?view=categories' },
+  { label: 'Categories', to: '/categories' },
   { label: 'About', to: '/about' },
 ];
 
@@ -65,7 +65,8 @@ const Navbar = (): JSX.Element => {
                 to={link.to}
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  location.pathname === link.to
+                  // Exact match for '/', prefix match for everything else
+                  (link.to === '/' ? location.pathname === '/' : location.pathname.startsWith(link.to))
                     ? 'text-white bg-white/10'
                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                 )}
@@ -116,7 +117,7 @@ const Navbar = (): JSX.Element => {
               to={link.to}
               className={cn(
                 'px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                location.pathname === link.to
+                (link.to === '/' ? location.pathname === '/' : location.pathname.startsWith(link.to))
                   ? 'text-white bg-white/10'
                   : 'text-gray-300 hover:text-white hover:bg-white/5'
               )}

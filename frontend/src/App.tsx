@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from '@/features/guest/landing/LandingPage';
 import BrowsePage from '@/features/guest/browse/BrowsePage';
+import CategoriesPage from '@/features/guest/categories/CategoriesPage';
 import VideoDetailPage from '@/features/guest/videoDetail/VideoDetailPage';
 import LoginPage from '@/features/guest/auth/pages/LoginPage';
 import RegisterPage from '@/features/guest/auth/pages/RegisterPage';
@@ -14,6 +15,7 @@ const App = () => {
         {/* Guest / Public routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/browse" element={<BrowsePage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/videos/:id" element={<VideoDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
 

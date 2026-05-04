@@ -93,10 +93,11 @@ export const mockVideos: VideoSummary[] = [
 ];
 
 export const mockCategories: Category[] = [
-  { id: '1', name: 'Action', description: 'High-octane thrills', thumbnailUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&q=80' },
-  { id: '2', name: 'Drama', description: 'Deep emotional stories', thumbnailUrl: 'https://images.unsplash.com/photo-1460881680858-30d872d5b530?w=400&q=80' },
-  { id: '3', name: 'Sci-Fi', description: 'Science and imagination', thumbnailUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&q=80' },
-  { id: '4', name: 'Horror', description: 'Fear at its finest', thumbnailUrl: 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=400&q=80' },
-  { id: '5', name: 'Comedy', description: 'Laughs guaranteed', thumbnailUrl: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&q=80' },
-  { id: '6', name: 'Documentary', description: 'Real world stories', thumbnailUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80' },
+  { id: '1', categoryName: 'Action',      description: 'High-octane car chases, intense fight scenes, and explosive stunts that keep you on the edge of your seat.' },
+  { id: '2', categoryName: 'Drama',       description: 'Deeply emotional narratives exploring human struggles, relationships, and personal growth.' },
+  { id: '3', categoryName: 'Sci-Fi',      description: 'Mind-bending science and imagination — from distant galaxies to dystopian futures.' },
+  { id: '4', categoryName: 'Horror',      description: 'Spine-chilling suspense, supernatural terror, and psychological fear at its finest.' },
+  { id: '5', categoryName: 'Comedy',      description: 'Light-hearted humor, witty dialogue, and laugh-out-loud moments guaranteed to lift your mood.' },
+  { id: '6', categoryName: 'Documentary', description: 'Captivating real-world stories, investigative journalism, and breathtaking nature coverage.' },
 ];
+

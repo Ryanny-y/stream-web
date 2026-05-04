@@ -26,9 +26,14 @@ export interface VideoSummary {
   viewCount: number;
 }
 
+/**
+ * Matches the backend Category entity response:
+ * { id, categoryName, description }
+ * thumbnailUrl is NOT returned by the backend — we derive visuals on the frontend.
+ */
 export interface Category {
   id: string;
-  name: string;
+  categoryName: string;
   description: string;
-  thumbnailUrl: string;
 }
+

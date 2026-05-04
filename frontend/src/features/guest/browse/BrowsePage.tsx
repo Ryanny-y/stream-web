@@ -23,7 +23,7 @@ const BrowsePage = (): JSX.Element => {
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [sortBy, setSortBy] = useState<SortOption>('rating');
 
-  const categories = ['All', ...mockCategories.map((c) => c.name)];
+  const categories = ['All', ...mockCategories.map((c) => c.categoryName)];
 
   const filteredVideos = useMemo(() => {
     let result = [...mockVideos];
