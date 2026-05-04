@@ -1,128 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   UserCheck, 
   UserX, 
   ShieldCheck, 
   AlertTriangle,
-  Plus
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw
 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { StatsCard } from './components/StatsCard';
 import { FilterBar } from './components/FilterBar';
 import { UserTable } from './components/UserTable';
-import { UserFormModal, UserDetailsModal, ConfirmDeleteDialog } from './components/UserModals';
-import type { AdminUser } from './types';
-
-// Mock Data updated to match AdminUserResponse DTO
-const MOCK_USERS: AdminUser[] = [
-  {
-    userId: '1',
-    username: 'admin_john',
-    email: 'john@viewix.com',
-    firstName: 'John',
-    lastName: 'Doe',
-    phone: '+1 234 567 890',
-    profileImage: '',
-    status: 'ACTIVE',
-    emailVerified: true,
-    failedAttempts: 0,
-    roles: ['ADMIN'],
-    createdAt: '2024-01-12T10:00:00',
-    updatedAt: '2024-05-04T15:30:00',
-    videosWatched: 124,
-    totalWatchTime: '45h 20m',
-    favoritesCount: 12,
-    watchlistCount: 24,
-  },
-  {
-    userId: '2',
-    username: 'jane_content',
-    email: 'jane@viewix.com',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    phone: '+1 987 654 321',
-    profileImage: '',
-    status: 'ACTIVE',
-    emailVerified: true,
-    failedAttempts: 2,
-    roles: ['CONTENT_MANAGER'],
-    createdAt: '2024-02-05T09:15:00',
-    updatedAt: '2024-05-05T11:45:00',
-    videosWatched: 89,
-    totalWatchTime: '32h 15m',
-    favoritesCount: 8,
-    watchlistCount: 15,
-  },
-  {
-    userId: '3',
-    username: 'mike_b',
-    email: 'mike.b@gmail.com',
-    firstName: 'Michael',
-    lastName: 'Brown',
-    phone: '',
-    profileImage: '',
-    status: 'SUSPENDED',
-    emailVerified: true,
-    failedAttempts: 5,
-    lockedUntil: '2024-05-10T00:00:00',
-    roles: ['USER'],
-    createdAt: '2024-03-15T14:20:00',
-    updatedAt: '2024-05-03T18:10:00',
-    videosWatched: 245,
-    totalWatchTime: '112h 45m',
-    favoritesCount: 45,
-    watchlistCount: 67,
-  },
-  {
-    userId: '4',
-    username: 'sarah_w',
-    email: 'sarah.w@outlook.com',
-    firstName: 'Sarah',
-    lastName: 'Wilson',
-    phone: '',
-    profileImage: '',
-    status: 'BANNED',
-    emailVerified: false,
-    failedAttempts: 12,
-    roles: ['USER'],
-    createdAt: '2024-04-20T11:40:00',
-    updatedAt: '2024-05-01T09:20:00',
-    videosWatched: 0,
-    totalWatchTime: '0h',
-    favoritesCount: 0,
-    watchlistCount: 0,
-  },
-  {
-    userId: '5',
-    username: 'david_m',
-    email: 'david.m@viewix.com',
-    firstName: 'David',
-    lastName: 'Miller',
-    phone: '+44 7700 900000',
-    profileImage: '',
-    status: 'ACTIVE',
-    emailVerified: true,
-    failedAttempts: 0,
-    roles: ['USER', 'CONTENT_MANAGER'],
-    createdAt: '2024-05-02T16:50:00',
-    updatedAt: '2024-05-04T12:00:00',
-    videosWatched: 42,
-    totalWatchTime: '15h 30m',
-    favoritesCount: 5,
-    watchlistCount: 12,
-  }
-];
+import { UserFormModal, ConfirmDeleteDialog } from './components/UserModals';
+import type { AdminUser, UserStats } from './types';
+import { apiFetch } from '@/shared/lib/api';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 
 export const UserManagementPage: React.FC = () => {
-  const [users, setUsers] = useState<AdminUser[]>(MOCK_USERS);
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
   // Modal states
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [usersData, statsData] = await Promise.all([
+        apiFetch('/admin/users'),
+        apiFetch('/admin/users/status')
+      ]);
+      setUsers(usersData);
+      setStats(statsData);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Pagination Logic
+  const indexOfLastUser = currentPage * itemsPerPage;
+  const indexOfFirstUser = indexOfLastUser - itemsPerPage;
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(users.length / itemsPerPage);
 
   const handleAddUser = () => {
     setEditingUser(null);
@@ -132,11 +70,6 @@ export const UserManagementPage: React.FC = () => {
   const handleEditUser = (user: AdminUser) => {
     setEditingUser(user);
     setIsFormOpen(true);
-  };
-
-  const handleViewDetails = (user: AdminUser) => {
-    setSelectedUser(user);
-    setIsDetailsOpen(true);
   };
 
   const handleDeleteClick = (user: AdminUser) => {
@@ -154,14 +87,12 @@ export const UserManagementPage: React.FC = () => {
 
   const handleFormSubmit = (data: any) => {
     if (editingUser) {
-      // Update
       setUsers(users.map(u => u.userId === editingUser.userId ? { 
         ...u, 
         ...data, 
         updatedAt: new Date().toISOString() 
       } : u));
     } else {
-      // Add
       const newUser: AdminUser = {
         userId: Math.random().toString(36).substr(2, 9),
         ...data,
@@ -192,44 +123,52 @@ export const UserManagementPage: React.FC = () => {
           <h1 className="text-3xl font-bold tracking-tight text-white">Manage Users</h1>
           <p className="text-gray-400 mt-1">Manage registered users, roles, and account access.</p>
         </div>
-        <Button 
-          onClick={handleAddUser}
-          className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 shrink-0"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add User
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            onClick={fetchData}
+            disabled={isLoading}
+            className="bg-white/5 border-white/10 hover:bg-white/10 text-white"
+          >
+            <RotateCcw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button 
+            onClick={handleAddUser}
+            className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add User
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatsCard 
           label="Total Users" 
-          value={users.length} 
+          value={isLoading ? '...' : stats?.totalUsers ?? 0} 
           icon={Users} 
-          trend={{ value: '12%', isUp: true }} 
         />
         <StatsCard 
           label="Active Users" 
-          value={users.filter(u => u.status === 'ACTIVE').length} 
+          value={isLoading ? '...' : stats?.totalActiveUsers ?? 0} 
           icon={UserCheck} 
-          trend={{ value: '5%', isUp: true }} 
         />
         <StatsCard 
           label="Suspended" 
-          value={users.filter(u => u.status === 'SUSPENDED').length} 
+          value={isLoading ? '...' : stats?.suspendedUsers ?? 0} 
           icon={UserX} 
-          trend={{ value: '2%', isUp: false }} 
         />
         <StatsCard 
           label="Banned" 
-          value={users.filter(u => u.status === 'BANNED').length} 
+          value={isLoading ? '...' : stats?.bannedUsers ?? 0} 
           icon={AlertTriangle} 
           className="border-rose-500/20 bg-rose-500/5"
         />
         <StatsCard 
           label="System Admins" 
-          value={users.filter(u => u.roles.includes('ADMIN')).length} 
+          value={isLoading ? '...' : stats?.systemAdmin ?? 0} 
           icon={ShieldCheck} 
         />
       </div>
@@ -238,22 +177,81 @@ export const UserManagementPage: React.FC = () => {
       <div className="space-y-4">
         <FilterBar />
         
-        <UserTable 
-          users={users} 
-          onView={handleViewDetails}
-          onEdit={handleEditUser}
-          onDelete={handleDeleteClick}
-          onStatusChange={handleStatusChange}
-        />
-
-        {/* Pagination Placeholder */}
-        <div className="flex items-center justify-between py-4">
-          <p className="text-sm text-gray-500">Showing {users.length} of {users.length} users</p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled className="bg-zinc-900 border-white/5 text-gray-400">Previous</Button>
-            <Button variant="outline" size="sm" disabled className="bg-zinc-900 border-white/5 text-gray-400">Next</Button>
+        {error && (
+          <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 flex items-center gap-3 text-rose-500">
+            <AlertTriangle className="w-5 h-5" />
+            <p className="text-sm font-medium">{error}</p>
+            <Button variant="ghost" size="sm" onClick={fetchData} className="ml-auto hover:bg-rose-500/20">Try Again</Button>
           </div>
-        </div>
+        )}
+
+        {isLoading ? (
+          <div className="space-y-2">
+            {[...Array(itemsPerPage)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full bg-white/5 rounded-xl" />
+            ))}
+          </div>
+        ) : users.length === 0 ? (
+          <div className="bg-zinc-900/50 border border-white/5 rounded-xl p-12 text-center">
+            <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white">No users found</h3>
+            <p className="text-gray-500 mt-1">Start by adding a new user to your platform.</p>
+            <Button onClick={handleAddUser} variant="outline" className="mt-4 border-white/10 text-white">
+              Add First User
+            </Button>
+          </div>
+        ) : (
+          <>
+            <UserTable 
+              users={currentUsers} 
+              onEdit={handleEditUser}
+              onDelete={handleDeleteClick}
+              onStatusChange={handleStatusChange}
+            />
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between py-4">
+              <p className="text-sm text-gray-500">
+                Showing <span className="text-white font-medium">{indexOfFirstUser + 1}</span> to <span className="text-white font-medium">{Math.min(indexOfLastUser, users.length)}</span> of <span className="text-white font-medium">{users.length}</span> users
+              </p>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="bg-zinc-900 border-white/5 text-gray-400 hover:text-white disabled:opacity-30"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+                </Button>
+                <div className="flex items-center gap-1 mx-2">
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                        currentPage === i + 1 
+                          ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                          : "text-gray-500 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="bg-zinc-900 border-white/5 text-gray-400 hover:text-white disabled:opacity-30"
+                >
+                  Next <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Modals */}
@@ -262,12 +260,6 @@ export const UserManagementPage: React.FC = () => {
         onClose={() => setIsFormOpen(false)} 
         onSubmit={handleFormSubmit}
         user={editingUser}
-      />
-
-      <UserDetailsModal 
-        isOpen={isDetailsOpen} 
-        onClose={() => setIsDetailsOpen(false)} 
-        user={selectedUser}
       />
 
       <ConfirmDeleteDialog 

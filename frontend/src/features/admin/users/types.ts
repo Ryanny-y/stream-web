@@ -29,8 +29,8 @@ export interface AdminUser {
 
 export interface UserStats {
   totalUsers: number;
-  activeUsers: number;
+  totalActiveUsers: number;
   suspendedUsers: number;
   bannedUsers: number;
-  admins: number;
+  systemAdmin: number;
 }

@@ -1,13 +1,11 @@
 import React from 'react';
 import { 
   MoreHorizontal, 
-  Eye, 
   Edit, 
   ShieldAlert, 
   Trash2,
   Calendar,
   Clock,
-  ShieldCheck,
   MailCheck,
   MailX
 } from 'lucide-react';
@@ -34,7 +32,6 @@ import { RoleBadge, StatusBadge } from './Badges';
 
 interface UserTableProps {
   users: AdminUser[];
-  onView: (user: AdminUser) => void;
   onEdit: (user: AdminUser) => void;
   onDelete: (user: AdminUser) => void;
   onStatusChange: (user: AdminUser) => void;
@@ -42,7 +39,6 @@ interface UserTableProps {
 
 export const UserTable: React.FC<UserTableProps> = ({ 
   users, 
-  onView, 
   onEdit, 
   onDelete,
   onStatusChange 
@@ -131,9 +127,6 @@ export const UserTable: React.FC<UserTableProps> = ({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48 bg-zinc-950 border-white/10 text-white">
                     <DropdownMenuLabel>User Management</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => onView(user)} className="cursor-pointer">
-                      <Eye className="mr-2 h-4 w-4" /> View Full Profile
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onEdit(user)} className="cursor-pointer">
                       <Edit className="mr-2 h-4 w-4" /> Edit Account
                     </DropdownMenuItem>
