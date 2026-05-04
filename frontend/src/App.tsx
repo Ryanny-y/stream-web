@@ -11,6 +11,7 @@ import AboutPage from '@/features/guest/about/AboutPage';
 // Admin Imports
 import { AdminLayout } from '@/features/admin/layout/AdminLayout';
 import { AdminDashboard } from '@/features/admin/dashboard/AdminDashboard';
+import UserManagementPage from '@/features/admin/users/UserManagementPage';
 
 // Auth Imports
 import { AuthProvider } from '@/shared/lib/auth-context';
@@ -32,7 +33,7 @@ const App = () => {
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<div className="p-8">Manage Users Placeholder</div>} />
+            <Route path="users" element={<UserManagementPage />} />
             <Route path="videos" element={<div className="p-8">Manage Videos Placeholder</div>} />
             <Route path="categories" element={<div className="p-8">Categories Placeholder</div>} />
             <Route path="reports" element={<div className="p-8">Reports Placeholder</div>} />
