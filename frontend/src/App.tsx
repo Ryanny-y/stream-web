@@ -12,38 +12,51 @@ import AboutPage from '@/features/guest/about/AboutPage';
 import { AdminLayout } from '@/features/admin/layout/AdminLayout';
 import { AdminDashboard } from '@/features/admin/dashboard/AdminDashboard';
 
+// Auth Imports
+import { AuthProvider } from '@/shared/lib/auth-context';
+import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
+
 const App = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Admin routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users" element={<div className="p-8">Manage Users Placeholder</div>} />
-          <Route path="videos" element={<div className="p-8">Manage Videos Placeholder</div>} />
-          <Route path="categories" element={<div className="p-8">Categories Placeholder</div>} />
-          <Route path="reports" element={<div className="p-8">Reports Placeholder</div>} />
-          <Route path="logs" element={<div className="p-8">Audit Logs Placeholder</div>} />
-          <Route path="settings" element={<div className="p-8">Settings Placeholder</div>} />
-        </Route>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Admin routes - Protected */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute allowedRole="ADMIN">
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<div className="p-8">Manage Users Placeholder</div>} />
+            <Route path="videos" element={<div className="p-8">Manage Videos Placeholder</div>} />
+            <Route path="categories" element={<div className="p-8">Categories Placeholder</div>} />
+            <Route path="reports" element={<div className="p-8">Reports Placeholder</div>} />
+            <Route path="logs" element={<div className="p-8">Audit Logs Placeholder</div>} />
+            <Route path="settings" element={<div className="p-8">Settings Placeholder</div>} />
+          </Route>
 
-        {/* Guest / Public routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/browse" element={<BrowsePage />} />
-        <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/videos/:id" element={<VideoDetailPage />} />
-        <Route path="/about" element={<AboutPage />} />
+          {/* Guest / Public routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/browse" element={<BrowsePage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/videos/:id" element={<VideoDetailPage />} />
+          <Route path="/about" element={<AboutPage />} />
 
-        {/* Auth routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          {/* Auth routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Fallback: redirect unknown routes to home */}
-        <Route path="*" element={<LandingPage />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Fallback: redirect unknown routes to home */}
+          <Route path="*" element={<LandingPage />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 

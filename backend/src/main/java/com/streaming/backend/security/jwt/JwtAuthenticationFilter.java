@@ -39,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        if (path.startsWith("/videos/") || path.startsWith("/images/")) {
+        if (path.startsWith("/videos/") || path.startsWith("/images/") || path.startsWith("/api/auth/")) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -1,13 +1,15 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'react-router-dom';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import AuthCard from '../components/AuthCard';
+import { useAuth } from '@/shared/lib/auth-context';
+import { apiFetch } from '@/shared/lib/api';
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  usernameOrEmail: z.string().min(3, 'Username or email must be at least 3 characters'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   rememberMe: z.boolean().optional(),
 });
@@ -17,6 +19,13 @@ type LoginFormData = z.infer<typeof loginSchema>;
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || '/';
 
   const {
     register,
@@ -29,10 +38,24 @@ const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormData): Promise<void> => {
     setIsLoading(true);
-    // TODO: wire up to authService.login(data) when backend is ready
-    console.log('Login attempt:', data);
-    await new Promise((r) => setTimeout(r, 1500)); // simulate API call
-    setIsLoading(false);
+    setError(null);
+    try {
+      const response = await apiFetch('/auth/login', {
+        method: 'POST',
+        body: {
+          usernameOrEmail: data.usernameOrEmail,
+          password: data.password,
+        },
+      });
+      
+      login(response);
+      navigate(from, { replace: true });
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'Invalid username/email or password');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,21 +72,28 @@ const LoginPage = () => {
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        {/* Email */}
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-500 text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* Username or Email */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-            Email Address
+          <label htmlFor="usernameOrEmail" className="block text-sm font-medium text-foreground mb-1.5">
+            Username or Email
           </label>
           <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            {...register('email')}
+            id="usernameOrEmail"
+            type="text"
+            autoComplete="username"
+            {...register('usernameOrEmail')}
             className="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-            placeholder="you@example.com"
+            placeholder="Username or email"
           />
-          {errors.email && (
-            <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>
+          {errors.usernameOrEmail && (
+            <p className="mt-1 text-xs text-red-400">{errors.usernameOrEmail.message}</p>
           )}
         </div>
 

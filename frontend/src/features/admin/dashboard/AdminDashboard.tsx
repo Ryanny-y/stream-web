@@ -41,15 +41,6 @@ const userGrowthData = [
   { name: 'Jun', users: 15000 },
 ];
 
-const videoUploadsData = [
-  { name: 'Jan', uploads: 120 },
-  { name: 'Feb', uploads: 150 },
-  { name: 'Mar', uploads: 180 },
-  { name: 'Apr', uploads: 140 },
-  { name: 'May', uploads: 220 },
-  { name: 'Jun', uploads: 280 },
-];
-
 const categoriesData = [
   { name: 'Action', value: 400 },
   { name: 'Sci-Fi', value: 300 },
