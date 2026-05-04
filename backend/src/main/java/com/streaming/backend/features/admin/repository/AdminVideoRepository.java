@@ -3,6 +3,7 @@ package com.streaming.backend.features.admin.repository;
 import com.streaming.backend.domain.Video;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +21,7 @@ public interface AdminVideoRepository extends JpaRepository<Video, UUID> {
     Optional<Video> findByVideoId(UUID videoId);
 
     boolean existsBySlugAndVideoIdNot(String slug, UUID videoId);
+
+    @Query("select coalesce(sum(v.totalViews), 0) from Video v")
+    Long sumTotalViews();
 }
