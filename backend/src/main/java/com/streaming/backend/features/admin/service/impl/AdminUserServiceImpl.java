@@ -11,6 +11,7 @@ import com.streaming.backend.features.admin.dto.UpdateUserRolesRequest;
 import com.streaming.backend.features.admin.dto.UpdateUserStatusRequest;
 import com.streaming.backend.features.admin.mapper.AdminUserMapper;
 import com.streaming.backend.features.admin.repository.AdminUserRepository;
+import com.streaming.backend.features.admin.service.AdminLogService;
 import com.streaming.backend.features.admin.service.AdminUserService;
 import com.streaming.backend.features.auth.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final AdminUserRepository adminUserRepository;
     private final RoleRepository roleRepository;
     private final AdminUserMapper adminUserMapper;
+    private final AdminLogService adminLogService;
 
     @Override
     @Transactional(readOnly = true)
@@ -52,36 +54,53 @@ public class AdminUserServiceImpl implements AdminUserService {
         User user = findUser(userId);
         validateUniqueUsername(userId, request.getUsername());
         validateUniqueEmail(userId, request.getEmail());
+        AdminUserResponse oldValue = adminUserMapper.toAdminUserResponse(user);
 
         adminUserMapper.updateUserFromRequest(request, user);
+        AdminUserResponse response = adminUserMapper.toAdminUserResponse(adminUserRepository.save(user));
 
-        return adminUserMapper.toAdminUserResponse(adminUserRepository.save(user));
+        adminLogService.createAuditLog("UPDATE", "User", userId.toString(), oldValue, response);
+
+        return response;
     }
 
     @Override
     public AdminUserResponse updateUserRoles(UUID userId, UpdateUserRolesRequest request) {
         User user = findUser(userId);
+        AdminUserResponse oldValue = adminUserMapper.toAdminUserResponse(user);
         Set<Role> roles = request.getRoles().stream()
                 .map(this::findRole)
                 .collect(Collectors.toSet());
 
         user.setRoles(roles);
+        AdminUserResponse response = adminUserMapper.toAdminUserResponse(adminUserRepository.save(user));
 
-        return adminUserMapper.toAdminUserResponse(adminUserRepository.save(user));
+        adminLogService.createAuditLog("UPDATE_ROLES", "User", userId.toString(), oldValue, response);
+
+        return response;
     }
 
     @Override
     public AdminUserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request) {
         User user = findUser(userId);
-        user.setStatus(request.getStatus());
+        AdminUserResponse oldValue = adminUserMapper.toAdminUserResponse(user);
 
-        return adminUserMapper.toAdminUserResponse(adminUserRepository.save(user));
+        user.setStatus(request.getStatus());
+        AdminUserResponse response = adminUserMapper.toAdminUserResponse(adminUserRepository.save(user));
+
+        adminLogService.createAuditLog("UPDATE_STATUS", "User", userId.toString(), oldValue, response);
+
+        return response;
     }
 
     @Override
     public void deleteUser(UUID userId) {
         User user = findUser(userId);
+        AdminUserResponse oldValue = adminUserMapper.toAdminUserResponse(user);
+
         adminUserRepository.delete(user);
+
+        adminLogService.createAuditLog("DELETE", "User", userId.toString(), oldValue, null);
     }
 
     private User findUser(UUID userId) {

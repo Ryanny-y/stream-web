@@ -9,6 +9,7 @@ import com.streaming.backend.features.admin.dto.UpdateCategoryRequest;
 import com.streaming.backend.features.admin.mapper.AdminCategoryMapper;
 import com.streaming.backend.features.admin.repository.AdminCategoryRepository;
 import com.streaming.backend.features.admin.service.AdminCategoryService;
+import com.streaming.backend.features.admin.service.AdminLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
     private final AdminCategoryRepository adminCategoryRepository;
     private final AdminCategoryMapper adminCategoryMapper;
+    private final AdminLogService adminLogService;
 
     @Override
     @Transactional(readOnly = true)
@@ -38,24 +40,35 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         validateUniqueCategoryName(request.getCategoryName());
 
         Category category = adminCategoryMapper.toCategory(request);
+        AdminCategoryResponse response = adminCategoryMapper.toAdminCategoryResponse(adminCategoryRepository.save(category));
 
-        return adminCategoryMapper.toAdminCategoryResponse(adminCategoryRepository.save(category));
+        adminLogService.createAuditLog("CREATE", "Category", response.getCategoryId().toString(), null, response);
+
+        return response;
     }
 
     @Override
     public AdminCategoryResponse updateCategory(Integer categoryId, UpdateCategoryRequest request) {
         Category category = findCategory(categoryId);
         validateUniqueCategoryName(categoryId, request.getCategoryName());
+        AdminCategoryResponse oldValue = adminCategoryMapper.toAdminCategoryResponse(category);
 
         adminCategoryMapper.updateCategoryFromRequest(request, category);
+        AdminCategoryResponse response = adminCategoryMapper.toAdminCategoryResponse(adminCategoryRepository.save(category));
 
-        return adminCategoryMapper.toAdminCategoryResponse(adminCategoryRepository.save(category));
+        adminLogService.createAuditLog("UPDATE", "Category", categoryId.toString(), oldValue, response);
+
+        return response;
     }
 
     @Override
     public void deleteCategory(Integer categoryId) {
         Category category = findCategory(categoryId);
+        AdminCategoryResponse oldValue = adminCategoryMapper.toAdminCategoryResponse(category);
+
         adminCategoryRepository.delete(category);
+
+        adminLogService.createAuditLog("DELETE", "Category", categoryId.toString(), oldValue, null);
     }
 
     private Category findCategory(Integer categoryId) {

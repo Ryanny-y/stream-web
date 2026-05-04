@@ -14,6 +14,7 @@ import com.streaming.backend.features.admin.dto.UpdateVideoStatusRequest;
 import com.streaming.backend.features.admin.mapper.AdminVideoMapper;
 import com.streaming.backend.features.admin.repository.AdminCategoryRepository;
 import com.streaming.backend.features.admin.repository.AdminVideoRepository;
+import com.streaming.backend.features.admin.service.AdminLogService;
 import com.streaming.backend.features.admin.service.AdminVideoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     private final AdminVideoRepository adminVideoRepository;
     private final AdminCategoryRepository adminCategoryRepository;
     private final AdminVideoMapper adminVideoMapper;
+    private final AdminLogService adminLogService;
 
     @Override
     public AdminVideoResponse createVideo(CreateVideoRequest request, User uploadedBy) {
@@ -58,56 +60,82 @@ public class AdminVideoServiceImpl implements AdminVideoService {
         video.setTotalViews(0L);
         video.setUploadedBy(uploadedBy);
         video.setCategories(findCategories(request.getCategoryIds()));
+        AdminVideoResponse response = adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
 
-        return adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
+        adminLogService.createAuditLog("CREATE", "Video", response.getVideoId().toString(), null, response);
+
+        return response;
     }
 
     @Override
     public AdminVideoResponse updateVideo(UUID videoId, UpdateVideoRequest request) {
         Video video = findVideo(videoId);
         validateUniqueSlug(videoId, request.getSlug());
+        AdminVideoResponse oldValue = adminVideoMapper.toAdminVideoResponse(video);
 
         adminVideoMapper.updateVideoFromRequest(request, video);
         if (request.getCategoryIds() != null) {
             video.setCategories(findCategories(request.getCategoryIds()));
         }
+        AdminVideoResponse response = adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
 
-        return adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
+        adminLogService.createAuditLog("UPDATE", "Video", videoId.toString(), oldValue, response);
+
+        return response;
     }
 
     @Override
     public void deleteVideo(UUID videoId) {
         Video video = findVideo(videoId);
+        AdminVideoResponse oldValue = adminVideoMapper.toAdminVideoResponse(video);
+
         adminVideoRepository.delete(video);
         deleteStoredFile(video.getFilePath());
         deleteStoredFile(video.getThumbnailPath());
+
+        adminLogService.createAuditLog("DELETE", "Video", videoId.toString(), oldValue, null);
     }
 
     @Override
     public AdminVideoResponse updateVideoStatus(UUID videoId, UpdateVideoStatusRequest request) {
         Video video = findVideo(videoId);
-        video.setStatus(request.getStatus());
+        AdminVideoResponse oldValue = adminVideoMapper.toAdminVideoResponse(video);
 
-        return adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
+        video.setStatus(request.getStatus());
+        AdminVideoResponse response = adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
+
+        adminLogService.createAuditLog("UPDATE_STATUS", "Video", videoId.toString(), oldValue, response);
+
+        return response;
     }
 
     @Override
     public AdminVideoResponse uploadThumbnail(UUID videoId, MultipartFile file) {
         Video video = findVideo(videoId);
+        AdminVideoResponse oldValue = adminVideoMapper.toAdminVideoResponse(video);
+
         String filename = storeFile(file, IMAGE_UPLOAD_DIR);
         video.setThumbnailPath(buildPublicFileUrl("images", filename));
+        AdminVideoResponse response = adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
 
-        return adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
+        adminLogService.createAuditLog("UPDATE_THUMBNAIL", "Video", videoId.toString(), oldValue, response);
+
+        return response;
     }
 
     @Override
     public AdminVideoResponse uploadVideoFile(UUID videoId, MultipartFile file) {
         Video video = findVideo(videoId);
+        AdminVideoResponse oldValue = adminVideoMapper.toAdminVideoResponse(video);
+
         String filename = storeFile(file, VIDEO_UPLOAD_DIR);
         video.setFilePath(buildPublicFileUrl("videos", filename));
         video.setFileSize(file.getSize());
+        AdminVideoResponse response = adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
 
-        return adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
+        adminLogService.createAuditLog("UPDATE_FILE", "Video", videoId.toString(), oldValue, response);
+
+        return response;
     }
 
     private Video findVideo(UUID videoId) {

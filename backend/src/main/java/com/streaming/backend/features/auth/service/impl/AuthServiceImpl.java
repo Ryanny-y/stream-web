@@ -12,6 +12,7 @@ import com.streaming.backend.features.auth.dto.AuthResponse;
 import com.streaming.backend.features.auth.mapper.AuthMapper;
 import com.streaming.backend.features.auth.repository.AuthRepository;
 import com.streaming.backend.features.auth.repository.RoleRepository;
+import com.streaming.backend.features.admin.service.AdminLogService;
 import com.streaming.backend.security.UserPrincipal;
 import com.streaming.backend.security.jwt.JwtService;
 import com.streaming.backend.features.auth.service.AuthService;
@@ -38,6 +39,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthMapper authMapper;
     private final JwtService jwtService;
+    private final AdminLogService adminLogService;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -67,15 +69,21 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         User user = authRepository
                 .findByUsernameOrEmail(request.getUsernameOrEmail(), request.getUsernameOrEmail())
-                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Invalid username/email or password."));
+                .orElse(null);
+
+        if (user == null) {
+            adminLogService.createLoginLog(null, request.getUsernameOrEmail(), false);
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid username/email or password.");
+        }
 
         if (user.getStatus() != UserStatus.ACTIVE) {
+            adminLogService.createLoginLog(user, request.getUsernameOrEmail(), false);
             throw new ApiException(HttpStatus.FORBIDDEN, "Account is not active.");
         }
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -85,8 +93,11 @@ public class AuthServiceImpl implements AuthService {
             );
 
             String accessToken = jwtService.generateAccessToken(new UserPrincipal(user));
+            adminLogService.createLoginLog(user, request.getUsernameOrEmail(), true);
+
             return authMapper.toAuthResponse(user, accessToken);
         } catch (AuthenticationException ex) {
+            adminLogService.createLoginLog(user, request.getUsernameOrEmail(), false);
             throw new ApiException(HttpStatus.BAD_REQUEST, "Username/Email or Password is incorrect.");
         }
     }
