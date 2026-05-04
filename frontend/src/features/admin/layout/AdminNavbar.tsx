@@ -1,7 +1,9 @@
 import React from 'react';
 import { Search, Bell, Menu, LogOut, User, Settings as SettingsIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
+import { useAuth } from '@/shared/lib/auth-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +23,22 @@ interface AdminNavbarProps {
 }
 
 export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onMenuClick }) => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <header className="h-16 border-b border-white/10 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between">
       <div className="flex items-center gap-2 lg:gap-4 flex-1 max-w-md">
@@ -46,21 +64,31 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onMenuClick }) => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="p-0 hover:bg-transparent">
               <Avatar className="h-9 w-9 border border-white/10 ring-2 ring-primary/20 ring-offset-2 ring-offset-zinc-950">
-                <AvatarFallback className="bg-primary text-white">AD</AvatarFallback>
+                <AvatarFallback className="bg-primary text-white">
+                  {user ? getInitials(user.fullName) : 'AD'}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none text-white">{user?.fullName}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+              </div>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2">
+            <DropdownMenuItem className="gap-2 cursor-pointer">
               <User className="w-4 h-4" /> Profile
             </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2">
+            <DropdownMenuItem className="gap-2 cursor-pointer">
               <SettingsIcon className="w-4 h-4" /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 text-primary focus:text-primary focus:bg-primary/10">
+            <DropdownMenuItem 
+              className="gap-2 text-primary focus:text-primary focus:bg-primary/10 cursor-pointer"
+              onClick={handleLogout}
+            >
               <LogOut className="w-4 h-4" /> Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

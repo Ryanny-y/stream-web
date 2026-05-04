@@ -8,10 +8,12 @@ import {
   BarChart3, 
   History, 
   Settings,
-  Tv
+  Tv,
+  X
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
+import { useAuth } from '@/shared/lib/auth-context';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
@@ -22,7 +24,6 @@ const navItems = [
   { label: 'Audit Logs', icon: History, href: '/admin/logs' },
   { label: 'Settings', icon: Settings, href: '/admin/settings' },
 ];
-import { X } from 'lucide-react';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -31,6 +32,16 @@ interface AdminSidebarProps {
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
+  const { user } = useAuth();
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -82,12 +93,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, setIsOpen })
 
       <div className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-white/5">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">
-            AD
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
+            {user ? getInitials(user.fullName) : 'AD'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Admin User</p>
-            <p className="text-xs text-gray-400 truncate">admin@viewix.com</p>
+            <p className="text-sm font-medium text-white truncate">{user?.fullName || 'Admin User'}</p>
+            <p className="text-xs text-gray-400 truncate">{user?.email || 'admin@viewix.com'}</p>
           </div>
         </div>
       </div>

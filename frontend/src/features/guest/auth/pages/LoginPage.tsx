@@ -49,7 +49,13 @@ const LoginPage = () => {
       });
       
       login(response);
-      navigate(from, { replace: true });
+      
+      // Redirect based on role
+      if (response.roles.includes('ADMIN')) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Invalid username/email or password');
