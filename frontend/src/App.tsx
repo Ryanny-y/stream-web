@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from '@/features/guest/landing/LandingPage';
 import BrowsePage from '@/features/guest/browse/BrowsePage';
 import CategoriesPage from '@/features/guest/categories/CategoriesPage';
@@ -8,10 +8,26 @@ import RegisterPage from '@/features/guest/auth/pages/RegisterPage';
 import ForgotPasswordPage from '@/features/guest/auth/pages/ForgotPasswordPage';
 import AboutPage from '@/features/guest/about/AboutPage';
 
+// Admin Imports
+import { AdminLayout } from '@/features/admin/layout/AdminLayout';
+import { AdminDashboard } from '@/features/admin/dashboard/AdminDashboard';
+
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<div className="p-8">Manage Users Placeholder</div>} />
+          <Route path="videos" element={<div className="p-8">Manage Videos Placeholder</div>} />
+          <Route path="categories" element={<div className="p-8">Categories Placeholder</div>} />
+          <Route path="reports" element={<div className="p-8">Reports Placeholder</div>} />
+          <Route path="logs" element={<div className="p-8">Audit Logs Placeholder</div>} />
+          <Route path="settings" element={<div className="p-8">Settings Placeholder</div>} />
+        </Route>
+
         {/* Guest / Public routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/browse" element={<BrowsePage />} />
