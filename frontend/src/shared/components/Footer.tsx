@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Film, ExternalLink, Send, Mail } from 'lucide-react';
 
-const Footer = (): JSX.Element => {
+const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (

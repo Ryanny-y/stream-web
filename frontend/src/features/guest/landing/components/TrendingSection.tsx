@@ -2,7 +2,7 @@ import { TrendingUp } from 'lucide-react';
 import VideoCard from '@/shared/components/VideoCard';
 import { mockVideos } from '@/shared/utils/mockData';
 
-const TrendingSection = (): JSX.Element => {
+const TrendingSection = () => {
   // Sort by view count for "trending"
   const trending = [...mockVideos].sort((a, b) => b.viewCount - a.viewCount).slice(0, 6);
 

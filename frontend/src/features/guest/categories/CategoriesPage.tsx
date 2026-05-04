@@ -26,7 +26,7 @@ interface CategoryCardProps {
   videoCount: number;
 }
 
-const CategoryCard = ({ category, index, videoCount }: CategoryCardProps): JSX.Element => {
+const CategoryCard = ({ category, index, videoCount }: CategoryCardProps) => {
   const style = PALETTE[index % PALETTE.length];
   return (
     <Link
@@ -69,7 +69,7 @@ const CategoryCard = ({ category, index, videoCount }: CategoryCardProps): JSX.E
   );
 };
 
-const CategoriesPage = (): JSX.Element => {
+const CategoriesPage = () => {
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {

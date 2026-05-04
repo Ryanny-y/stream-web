@@ -14,7 +14,7 @@ const categoryColors = [
   { gradient: 'from-cyan-900/80 to-cyan-950/90',   ring: 'ring-cyan-500/30',   icon: '🎥' },
 ];
 
-const CategorySection = (): JSX.Element => {
+const CategorySection = () => {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="flex items-center justify-between mb-8">

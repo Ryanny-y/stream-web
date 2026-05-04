@@ -3,7 +3,7 @@ import { ShieldCheck, Zap, Globe, Users, Film } from 'lucide-react';
 import Navbar from '@/shared/components/Navbar';
 import Footer from '@/shared/components/Footer';
 
-const AboutPage = (): JSX.Element => {
+const AboutPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

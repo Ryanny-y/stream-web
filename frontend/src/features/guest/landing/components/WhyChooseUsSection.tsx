@@ -31,7 +31,7 @@ const features = [
   },
 ];
 
-const WhyChooseUsSection = (): JSX.Element => {
+const WhyChooseUsSection = () => {
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Subtle background glow */}

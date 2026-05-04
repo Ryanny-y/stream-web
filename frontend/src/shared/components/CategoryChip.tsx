@@ -9,7 +9,7 @@ interface CategoryChipProps {
   className?: string;
 }
 
-const CategoryChip = ({ label, active = false, onClick, className }: CategoryChipProps): JSX.Element => {
+const CategoryChip = ({ label, active = false, onClick, className }: CategoryChipProps) => {
   return (
     <button
       onClick={onClick}

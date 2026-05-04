@@ -10,7 +10,7 @@ import WhyChooseUsSection from './components/WhyChooseUsSection';
  * Main landing page for guest users.
  * Composed of self-contained section components to keep this file lean.
  */
-const LandingPage = (): JSX.Element => {
+const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

@@ -18,7 +18,7 @@ const formatViews = (n: number): string => {
   return n.toString();
 };
 
-const VideoDetailPage = (): JSX.Element => {
+const VideoDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const video = mockVideos.find((v) => v.id === id) ?? mockVideos[0];
 

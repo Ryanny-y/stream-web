@@ -15,7 +15,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'views', label: 'Most Watched' },
 ];
 
-const BrowsePage = (): JSX.Element => {
+const BrowsePage = () => {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') ?? 'All';
 

@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import VideoCard from '@/shared/components/VideoCard';
 import { mockVideos } from '@/shared/utils/mockData';
 
-const FeaturedCarousel = (): JSX.Element => {
+const FeaturedCarousel = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);

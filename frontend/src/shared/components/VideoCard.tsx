@@ -19,7 +19,7 @@ const formatDuration = (seconds: number): string => {
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 };
 
-const VideoCard = ({ video, showWatchlist = false, className }: VideoCardProps): JSX.Element => {
+const VideoCard = ({ video, showWatchlist = false, className }: VideoCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
 

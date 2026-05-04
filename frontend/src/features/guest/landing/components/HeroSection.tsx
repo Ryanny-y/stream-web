@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Play, Film } from 'lucide-react';
 
-const HeroSection = (): JSX.Element => {
+const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Cinematic background */}

@@ -37,7 +37,7 @@ const getPasswordStrength = (password: string): number => {
 const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
 const strengthColors = ['bg-red-500', 'bg-orange-400', 'bg-yellow-400', 'bg-emerald-500'];
 
-const RegisterPage = (): JSX.Element => {
+const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

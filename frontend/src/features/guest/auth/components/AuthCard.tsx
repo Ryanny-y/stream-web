@@ -14,7 +14,7 @@ interface AuthCardProps {
  * Shared wrapper for all auth pages (Login, Register, Forgot Password).
  * Uses a centered glassmorphism card on a cinematic dark background.
  */
-const AuthCard = ({ title, subtitle, children, footer }: AuthCardProps): JSX.Element => {
+const AuthCard = ({ title, subtitle, children, footer }: AuthCardProps) => {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background cinematic image */}

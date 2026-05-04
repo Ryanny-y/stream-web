@@ -12,7 +12,7 @@ const forgotSchema = z.object({
 
 type ForgotFormData = z.infer<typeof forgotSchema>;
 
-const ForgotPasswordPage = (): JSX.Element => {
+const ForgotPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
 

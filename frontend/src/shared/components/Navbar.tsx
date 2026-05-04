@@ -1,7 +1,7 @@
 // Placement: shared/components — Navbar appears on ALL pages (guest, user, admin)
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Film, Menu, X, ChevronDown } from 'lucide-react';
+import { Film, Menu, X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 interface NavLink {
@@ -16,7 +16,7 @@ const navLinks: NavLink[] = [
   { label: 'About', to: '/about' },
 ];
 
-const Navbar = (): JSX.Element => {
+const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
