@@ -16,11 +16,18 @@ import {
   AvatarImage,
 } from '@/shared/components/ui/avatar';
 
-export const AdminNavbar: React.FC = () => {
+interface AdminNavbarProps {
+  onMenuClick: () => void;
+}
+
+export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onMenuClick }) => {
   return (
-    <header className="h-16 border-b border-white/10 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-40 px-8 flex items-center justify-between">
-      <div className="flex items-center gap-4 flex-1 max-w-md">
-        <div className="relative w-full group">
+    <header className="h-16 border-b border-white/10 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between">
+      <div className="flex items-center gap-2 lg:gap-4 flex-1 max-w-md">
+        <Button variant="ghost" size="icon" className="lg:hidden text-gray-400 hover:text-white shrink-0" onClick={onMenuClick}>
+          <Menu className="w-5 h-5" />
+        </Button>
+        <div className="relative w-full group hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-primary transition-colors" />
           <Input 
             placeholder="Search analytics, users, videos..." 
