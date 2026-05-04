@@ -23,10 +23,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({
           <p className="text-xs text-gray-500">{description}</p>
         )}
       </CardHeader>
-      <CardContent className="flex-1">
-        <div className="w-full h-[300px]">
-          {children}
-        </div>
+      <CardContent className="flex-1 flex flex-col">
+        {children}
       </CardContent>
     </Card>
   );

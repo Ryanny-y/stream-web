@@ -155,7 +155,7 @@ export const AdminDashboard: React.FC = () => {
                   dataKey="value"
                   stroke="none"
                 >
-                  {categoriesData.map((entry, index) => (
+                  {categoriesData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
