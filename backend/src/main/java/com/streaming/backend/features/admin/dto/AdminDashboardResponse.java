@@ -10,8 +10,12 @@ import java.util.List;
 public class AdminDashboardResponse {
 
     private Long totalUsers;
+    private Long totalActiveUsers;
     private Long totalVideos;
     private Long totalCategories;
     private Long totalViews;
+    private List<DashboardUserGrowthResponse> userGrowth;
+    private List<DashboardCategoryStatsResponse> mostWatchedCategories;
+    private List<AdminVideoResponse> recentVideos;
     private List<AuditLogResponse> recentActivity;
 }

@@ -4,6 +4,7 @@ import com.streaming.backend.domain.Video;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,4 +25,7 @@ public interface AdminVideoRepository extends JpaRepository<Video, UUID> {
 
     @Query("select coalesce(sum(v.totalViews), 0) from Video v")
     Long sumTotalViews();
+
+    @EntityGraph(attributePaths = {"categories", "uploadedBy"})
+    List<Video> findByOrderByCreatedAtDesc(Pageable pageable);
 }
