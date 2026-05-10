@@ -5,9 +5,8 @@ import {
   Users, 
   Film, 
   Tags, 
-  BarChart3, 
+  LogIn, 
   History, 
-  Settings,
   Tv,
   X
 } from 'lucide-react';
@@ -20,9 +19,8 @@ const navItems = [
   { label: 'Manage Users', icon: Users, href: '/admin/users' },
   { label: 'Manage Videos', icon: Film, href: '/admin/videos' },
   { label: 'Categories', icon: Tags, href: '/admin/categories' },
-  { label: 'Reports', icon: BarChart3, href: '/admin/reports' },
+  { label: 'Login Logs', icon: LogIn, href: '/admin/login-logs' },
   { label: 'Audit Logs', icon: History, href: '/admin/logs' },
-  { label: 'Settings', icon: Settings, href: '/admin/settings' },
 ];
 
 interface AdminSidebarProps {

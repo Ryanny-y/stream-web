@@ -14,6 +14,7 @@ import { AdminDashboard } from '@/features/admin/dashboard/AdminDashboard';
 import UserManagementPage from '@/features/admin/users/UserManagementPage';
 import VideoManagementPage from '@/features/admin/videos/VideoManagementPage';
 import CategoryManagementPage from '@/features/admin/categories/CategoryManagementPage';
+import { AuditLogsPage, LoginLogsPage } from '@/features/admin/auditLogs/LogPages';
 
 // Auth Imports
 import { AuthProvider } from '@/shared/lib/auth-context';
@@ -38,9 +39,8 @@ const App = () => {
             <Route path="users" element={<UserManagementPage />} />
             <Route path="videos" element={<VideoManagementPage />} />
             <Route path="categories" element={<CategoryManagementPage />} />
-            <Route path="reports" element={<div className="p-8">Reports Placeholder</div>} />
-            <Route path="logs" element={<div className="p-8">Audit Logs Placeholder</div>} />
-            <Route path="settings" element={<div className="p-8">Settings Placeholder</div>} />
+            <Route path="login-logs" element={<LoginLogsPage />} />
+            <Route path="logs" element={<AuditLogsPage />} />
           </Route>
 
           {/* Guest / Public routes */}

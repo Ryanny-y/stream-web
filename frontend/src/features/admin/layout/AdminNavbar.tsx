@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell, Menu, LogOut, User, Settings as SettingsIcon } from 'lucide-react';
+import { Search, Bell, Menu, LogOut, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
@@ -79,9 +79,6 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onMenuClick }) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="gap-2 cursor-pointer">
               <User className="w-4 h-4" /> Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2 cursor-pointer">
-              <SettingsIcon className="w-4 h-4" /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
