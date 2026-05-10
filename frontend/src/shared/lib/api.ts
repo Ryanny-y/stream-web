@@ -29,7 +29,12 @@ export const apiFetch = async (endpoint: string, options: FetchOptions = {}) => 
     throw new Error(errorData.message || `Request failed with status ${response.status}`);
   }
 
-  return response.json();
+  if (response.status === 204) {
+    return null;
+  }
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 };
 
 export const apiUpload = async (endpoint: string, file: File) => {
@@ -53,5 +58,6 @@ export const apiUpload = async (endpoint: string, file: File) => {
     throw new Error(errorData.message || `Request failed with status ${response.status}`);
   }
 
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 };
