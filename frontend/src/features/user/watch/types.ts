@@ -14,3 +14,19 @@ export interface WatchPageResponse {
   progress: VideoProgress;
   suggestedVideos: DashboardVideo[];
 }
+
+export interface RatingSummary {
+  averageRating: number;
+  totalRatings: number;
+  userRating: number | null;
+}
+
+export interface Comment {
+  commentId: string;
+  videoId: string;
+  userId: string | null;
+  username: string | null;
+  profileImage: string | null;
+  commentText: string;
+  createdAt: string;
+}

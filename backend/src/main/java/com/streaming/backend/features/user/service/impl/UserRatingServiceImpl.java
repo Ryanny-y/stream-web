@@ -9,6 +9,7 @@ import com.streaming.backend.domain.enums.VideoStatus;
 import com.streaming.backend.domain.enums.Visibility;
 import com.streaming.backend.features.user.dto.RatingRequest;
 import com.streaming.backend.features.user.dto.RatingResponse;
+import com.streaming.backend.features.user.dto.RatingSummaryResponse;
 import com.streaming.backend.features.user.repository.UserProfileRepository;
 import com.streaming.backend.features.user.repository.UserRatingRepository;
 import com.streaming.backend.features.user.repository.UserVideoRepository;
@@ -27,6 +28,25 @@ public class UserRatingServiceImpl implements UserRatingService {
     private final UserProfileRepository userProfileRepository;
     private final UserVideoRepository userVideoRepository;
     private final UserRatingRepository userRatingRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public RatingSummaryResponse getRatingSummary(User currentUser, UUID videoId) {
+        findPublicActiveVideo(videoId);
+
+        UUID userId = currentUser == null ? null : currentUser.getUserId();
+        Integer userRating = userId == null
+                ? null
+                : userRatingRepository.findByUser_UserIdAndVideo_VideoId(userId, videoId)
+                        .map(Rating::getRating)
+                        .orElse(null);
+
+        return RatingSummaryResponse.builder()
+                .averageRating(userRatingRepository.getAverageRatingByVideoId(videoId))
+                .totalRatings(userRatingRepository.countByVideo_VideoId(videoId))
+                .userRating(userRating)
+                .build();
+    }
 
     @Override
     public RatingResponse createRating(User currentUser, UUID videoId, RatingRequest request) {

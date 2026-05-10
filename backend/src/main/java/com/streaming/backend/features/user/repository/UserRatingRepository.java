@@ -17,6 +17,17 @@ public interface UserRatingRepository extends JpaRepository<Rating, UUID> {
 
     boolean existsByUser_UserIdAndVideo_VideoId(UUID userId, UUID videoId);
 
+    long countByVideo_VideoId(UUID videoId);
+
+    @Query("""
+            select coalesce(avg(r.rating), 0)
+            from Rating r
+            where r.video.videoId = :videoId
+            """)
+    Double getAverageRatingByVideoId(
+            @Param("videoId") UUID videoId
+    );
+
     @Query("""
             select distinct r
             from Rating r

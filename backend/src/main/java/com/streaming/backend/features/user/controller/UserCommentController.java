@@ -1,5 +1,6 @@
 package com.streaming.backend.features.user.controller;
 
+import com.streaming.backend.common.response.ApiResponse;
 import com.streaming.backend.domain.User;
 import com.streaming.backend.features.user.dto.CommentResponse;
 import com.streaming.backend.features.user.dto.CreateCommentRequest;
@@ -29,31 +30,31 @@ public class UserCommentController {
     private final UserCommentService userCommentService;
 
     @PostMapping("/api/user/videos/{videoId}/comments")
-    public ResponseEntity<CommentResponse> createComment(
+    public ResponseEntity<ApiResponse<CommentResponse>> createComment(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable UUID videoId,
             @Valid @RequestBody CreateCommentRequest request
     ) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(userCommentService.createComment(getCurrentUser(userPrincipal), videoId, request));
+                .body(ApiResponse.success("Comment posted", userCommentService.createComment(getCurrentUser(userPrincipal), videoId, request)));
     }
 
     @GetMapping("/api/user/videos/{videoId}/comments")
-    public ResponseEntity<List<CommentResponse>> getVideoComments(
+    public ResponseEntity<ApiResponse<List<CommentResponse>>> getVideoComments(
             @PathVariable UUID videoId
     ) {
-        return ResponseEntity.ok(userCommentService.getVideoComments(videoId));
+        return ResponseEntity.ok(ApiResponse.success(userCommentService.getVideoComments(videoId)));
     }
 
     @DeleteMapping("/api/user/comments/{commentId}")
-    public ResponseEntity<Void> deleteComment(
+    public ResponseEntity<ApiResponse<Void>> deleteComment(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable UUID commentId
     ) {
         userCommentService.deleteComment(getCurrentUser(userPrincipal), commentId);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Comment deleted", null));
     }
 
     private User getCurrentUser(UserPrincipal userPrincipal) {
