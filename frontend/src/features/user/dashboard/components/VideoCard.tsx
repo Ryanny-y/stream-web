@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookmarkPlus, Play, Star, Trash2 } from 'lucide-react';
+import { BookmarkPlus, Heart, Play, Star, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import type { DashboardVideo } from '../types';
@@ -11,11 +11,22 @@ interface VideoCardProps {
   variant?: 'default' | 'watchlist' | 'trending';
   onSecondaryAction?: (videoId: string) => void;
   isSecondaryActive?: boolean;
+  secondaryKind?: 'watchlist' | 'favorite';
 }
 
-export const VideoCard: React.FC<VideoCardProps> = ({ video, variant = 'default', onSecondaryAction, isSecondaryActive }) => {
+export const VideoCard: React.FC<VideoCardProps> = ({
+  video,
+  variant = 'default',
+  onSecondaryAction,
+  isSecondaryActive,
+  secondaryKind = 'watchlist',
+}) => {
   const genre = video.categories[0];
   const secondaryActive = isSecondaryActive ?? variant === 'watchlist';
+  const SecondaryIcon = secondaryKind === 'favorite' ? Heart : BookmarkPlus;
+  const secondaryLabel = secondaryKind === 'favorite'
+    ? secondaryActive ? 'Remove from favorites' : 'Add to favorites'
+    : secondaryActive ? 'Remove from watchlist' : 'Add to watchlist';
 
   return (
     <article className="group overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-white/[0.07]">
@@ -60,10 +71,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, variant = 'default'
                 : 'bg-white/5 text-gray-300 hover:text-white'
             }`}
             onClick={() => onSecondaryAction?.(video.videoId)}
-            aria-label={variant === 'watchlist' ? 'Remove from watchlist' : 'Add to watchlist'}
+            aria-label={secondaryLabel}
             aria-pressed={secondaryActive}
           >
-            {variant === 'watchlist' ? <Trash2 className="h-4 w-4" /> : <BookmarkPlus className={`h-4 w-4 ${secondaryActive ? 'fill-current' : ''}`} />}
+            {variant === 'watchlist' ? <Trash2 className="h-4 w-4" /> : <SecondaryIcon className={`h-4 w-4 ${secondaryActive ? 'fill-current' : ''}`} />}
           </Button>
         </div>
       </div>
