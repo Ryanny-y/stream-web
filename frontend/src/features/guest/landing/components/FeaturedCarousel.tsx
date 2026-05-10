@@ -1,9 +1,14 @@
 import { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import VideoCard from '@/shared/components/VideoCard';
-import { mockVideos } from '@/shared/utils/mockData';
+import type { VideoSummary } from '@/shared/types/api';
 
-const FeaturedCarousel = () => {
+interface FeaturedCarouselProps {
+  videos: VideoSummary[];
+  isLoading: boolean;
+}
+
+const FeaturedCarousel = ({ videos, isLoading }: FeaturedCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -20,9 +25,6 @@ const FeaturedCarousel = () => {
     const offset = direction === 'left' ? -480 : 480;
     scrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
   };
-
-  // Feature only top-rated videos
-  const featured = mockVideos.filter((v) => v.rating >= 8.5);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -58,12 +60,22 @@ const FeaturedCarousel = () => {
         className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {featured.map((video) => (
+        {isLoading &&
+          Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="snap-start shrink-0 w-72 sm:w-80">
+              <div className="aspect-video rounded-xl bg-muted animate-pulse" />
+              <div className="mt-3 h-4 w-3/4 rounded bg-muted animate-pulse" />
+            </div>
+          ))}
+        {!isLoading && videos.map((video) => (
           <div key={video.id} className="snap-start shrink-0 w-72 sm:w-80">
             <VideoCard video={video} />
           </div>
         ))}
       </div>
+      {!isLoading && videos.length === 0 && (
+        <p className="text-sm text-muted-foreground">No featured videos are published yet.</p>
+      )}
     </section>
   );
 };

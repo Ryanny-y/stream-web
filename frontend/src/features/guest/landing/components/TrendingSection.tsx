@@ -1,11 +1,13 @@
 import { TrendingUp } from 'lucide-react';
 import VideoCard from '@/shared/components/VideoCard';
-import { mockVideos } from '@/shared/utils/mockData';
+import type { VideoSummary } from '@/shared/types/api';
 
-const TrendingSection = () => {
-  // Sort by view count for "trending"
-  const trending = [...mockVideos].sort((a, b) => b.viewCount - a.viewCount).slice(0, 6);
+interface TrendingSectionProps {
+  videos: VideoSummary[];
+  isLoading: boolean;
+}
 
+const TrendingSection = ({ videos, isLoading }: TrendingSectionProps) => {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Section Header */}
@@ -24,7 +26,14 @@ const TrendingSection = () => {
         className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:pb-0"
         style={{ scrollbarWidth: 'none' }}
       >
-        {trending.map((video, index) => (
+        {isLoading &&
+          Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="relative shrink-0 w-64 sm:w-auto">
+              <div className="aspect-video rounded-xl bg-muted animate-pulse" />
+              <div className="mt-3 h-4 w-2/3 rounded bg-muted animate-pulse" />
+            </div>
+          ))}
+        {!isLoading && videos.slice(0, 6).map((video, index) => (
           <div key={video.id} className="relative shrink-0 w-64 sm:w-auto">
             {/* Rank number overlay */}
             <span className="absolute -left-2 -top-2 z-10 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black shadow-lg shadow-primary/40">
@@ -34,6 +43,9 @@ const TrendingSection = () => {
           </div>
         ))}
       </div>
+      {!isLoading && videos.length === 0 && (
+        <p className="text-sm text-muted-foreground">No trending videos are published yet.</p>
+      )}
     </section>
   );
 };
