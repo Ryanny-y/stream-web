@@ -17,10 +17,14 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ApiErrorResponse> handleApiException(
+    public ResponseEntity<?> handleApiException(
             ApiException ex,
             HttpServletRequest request
     ) {
+        if (isMediaRequest(request)) {
+            return ResponseEntity.status(ex.getStatus()).build();
+        }
+
         ApiErrorResponse response = new ApiErrorResponse(
                 ex.getStatus().value(),
                 ex.getStatus().getReasonPhrase(),
@@ -35,10 +39,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidationException(
+    public ResponseEntity<?> handleValidationException(
             MethodArgumentNotValidException ex,
             HttpServletRequest request
     ) {
+        if (isMediaRequest(request)) {
+            return ResponseEntity.badRequest().build();
+        }
 
         Map<String, String> errors = new HashMap<>();
 
@@ -60,10 +67,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiErrorResponse> handleAccessDenied(
+    public ResponseEntity<?> handleAccessDenied(
             AccessDeniedException ex,
             HttpServletRequest request
     ) {
+        if (isMediaRequest(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         ApiErrorResponse response = new ApiErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",
@@ -78,7 +89,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleNoResourceFound(
+    public ResponseEntity<?> handleNoResourceFound(
             NoResourceFoundException ex,
             HttpServletRequest request
     ) {
@@ -100,10 +111,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGenericException(
+    public ResponseEntity<?> handleGenericException(
             Exception ex,
             HttpServletRequest request
     ) {
+        if (isMediaRequest(request)) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
         ApiErrorResponse response = new ApiErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
