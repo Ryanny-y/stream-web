@@ -18,65 +18,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import type { AdminVideo } from '../../videos/types';
+import { resolveMediaUrl } from '../../videos/media';
 
-// Mock data for the table
-const recentVideos = [
-  {
-    id: '1',
-    title: 'The Dark Horizon',
-    thumbnail: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80',
-    category: 'Sci-Fi',
-    views: '1.2M',
-    status: 'Published',
-    uploadDate: '2026-05-01',
-  },
-  {
-    id: '2',
-    title: 'Neon Nights',
-    thumbnail: 'https://images.unsplash.com/photo-1605806616949-1e87b487bc2a?auto=format&fit=crop&q=80',
-    category: 'Action',
-    views: '850K',
-    status: 'Published',
-    uploadDate: '2026-04-28',
-  },
-  {
-    id: '3',
-    title: 'Silent Whispers',
-    thumbnail: 'https://images.unsplash.com/photo-1574267432553-4b462808152a?auto=format&fit=crop&q=80',
-    category: 'Thriller',
-    views: '0',
-    status: 'Draft',
-    uploadDate: '2026-05-03',
-  },
-  {
-    id: '4',
-    title: 'Cosmic Journey',
-    thumbnail: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&q=80',
-    category: 'Documentary',
-    views: '3.1M',
-    status: 'Archived',
-    uploadDate: '2026-01-15',
-  },
-  {
-    id: '5',
-    title: 'Laugh Out Loud',
-    thumbnail: 'https://images.unsplash.com/photo-1527228114514-69e3fe619bfb?auto=format&fit=crop&q=80',
-    category: 'Comedy',
-    views: '150K',
-    status: 'Published',
-    uploadDate: '2026-05-02',
-  },
-];
+interface RecentVideosTableProps {
+  videos: AdminVideo[];
+}
 
-export const RecentVideosTable: React.FC = () => {
+const formatViews = (views: number) => {
+  if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
+  if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+  return views.toString();
+};
+
+const formatDate = (date: string) =>
+  new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(date));
+
+export const RecentVideosTable: React.FC<RecentVideosTableProps> = ({ videos }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'Published':
-        return <Badge variant="success">Published</Badge>;
-      case 'Draft':
-        return <Badge variant="warning">Draft</Badge>;
-      case 'Archived':
+      case 'ACTIVE':
+        return <Badge variant="success">Active</Badge>;
+      case 'ARCHIVED':
         return <Badge variant="secondary">Archived</Badge>;
+      case 'DELETED':
+        return <Badge variant="destructive">Deleted</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -97,22 +67,26 @@ export const RecentVideosTable: React.FC = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {recentVideos.map((video) => (
-            <TableRow key={video.id} className="border-white/5 hover:bg-white/5">
+          {videos.map((video) => (
+            <TableRow key={video.videoId} className="border-white/5 hover:bg-white/5">
               <TableCell>
                 <div className="w-16 h-9 rounded bg-zinc-800 overflow-hidden relative">
-                  <img 
-                    src={video.thumbnail} 
-                    alt={video.title} 
-                    className="w-full h-full object-cover"
-                  />
+                  {video.thumbnailPath ? (
+                    <img
+                      src={resolveMediaUrl(video.thumbnailPath)}
+                      alt={video.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-zinc-800" />
+                  )}
                 </div>
               </TableCell>
               <TableCell className="font-medium text-white">{video.title}</TableCell>
-              <TableCell className="text-gray-400">{video.category}</TableCell>
-              <TableCell className="text-gray-400">{video.views}</TableCell>
+              <TableCell className="text-gray-400">{video.categories[0] || 'Uncategorized'}</TableCell>
+              <TableCell className="text-gray-400">{formatViews(video.totalViews || 0)}</TableCell>
               <TableCell>{getStatusBadge(video.status)}</TableCell>
-              <TableCell className="text-gray-400 text-xs">{video.uploadDate}</TableCell>
+              <TableCell className="text-gray-400 text-xs">{formatDate(video.createdAt)}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
