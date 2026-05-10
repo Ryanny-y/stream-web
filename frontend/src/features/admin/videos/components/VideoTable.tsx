@@ -4,7 +4,6 @@ import {
   Eye, 
   Edit, 
   Trash2, 
-  Play, 
   Archive, 
   CheckCircle2,
   Clock,
@@ -29,6 +28,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import type { AdminVideo } from '../types';
 import { VideoStatusBadge } from './Badges';
+import { resolveMediaUrl } from '../media';
 
 interface VideoTableProps {
   videos: AdminVideo[];
@@ -45,7 +45,8 @@ export const VideoTable: React.FC<VideoTableProps> = ({
   onDelete,
   onStatusChange 
 }) => {
-  const formatDuration = (seconds: number) => {
+  const formatDuration = (seconds: number | null) => {
+    if (!seconds) return '00:00';
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
@@ -78,7 +79,7 @@ export const VideoTable: React.FC<VideoTableProps> = ({
               <TableCell>
                 <div className="relative aspect-video w-24 rounded overflow-hidden bg-zinc-800 border border-white/10 group-hover:border-primary/50 transition-colors">
                   <img 
-                    src={video.thumbnailPath} 
+                    src={resolveMediaUrl(video.thumbnailPath)} 
                     alt={video.title} 
                     className="w-full h-full object-cover"
                   />
@@ -141,9 +142,9 @@ export const VideoTable: React.FC<VideoTableProps> = ({
                       <Edit className="mr-2 h-4 w-4" /> Edit Content
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-white/5" />
-                    {video.status !== 'PUBLISHED' && (
-                      <DropdownMenuItem onClick={() => onStatusChange(video, 'PUBLISHED')} className="cursor-pointer text-emerald-500">
-                        <CheckCircle2 className="mr-2 h-4 w-4" /> Publish Now
+                    {video.status !== 'ACTIVE' && (
+                      <DropdownMenuItem onClick={() => onStatusChange(video, 'ACTIVE')} className="cursor-pointer text-emerald-500">
+                        <CheckCircle2 className="mr-2 h-4 w-4" /> Activate
                       </DropdownMenuItem>
                     )}
                     {video.status !== 'ARCHIVED' && (

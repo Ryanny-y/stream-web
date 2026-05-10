@@ -3,6 +3,7 @@ package com.streaming.backend.features.admin.service.impl;
 import com.streaming.backend.common.exceptions.BadRequestException;
 import com.streaming.backend.common.exceptions.ResourceNotFoundException;
 import com.streaming.backend.domain.Category;
+import com.streaming.backend.domain.enums.CategoryStatus;
 import com.streaming.backend.features.admin.dto.AdminCategoryResponse;
 import com.streaming.backend.features.admin.dto.CreateCategoryRequest;
 import com.streaming.backend.features.admin.dto.UpdateCategoryRequest;
@@ -40,6 +41,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         validateUniqueCategoryName(request.getCategoryName());
 
         Category category = adminCategoryMapper.toCategory(request);
+        category.setStatus(request.getStatus() == null ? CategoryStatus.ACTIVE : request.getStatus());
         AdminCategoryResponse response = adminCategoryMapper.toAdminCategoryResponse(adminCategoryRepository.save(category));
 
         adminLogService.createAuditLog("CREATE", "Category", response.getCategoryId().toString(), null, response);
@@ -54,6 +56,9 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         AdminCategoryResponse oldValue = adminCategoryMapper.toAdminCategoryResponse(category);
 
         adminCategoryMapper.updateCategoryFromRequest(request, category);
+        if (request.getStatus() != null) {
+            category.setStatus(request.getStatus());
+        }
         AdminCategoryResponse response = adminCategoryMapper.toAdminCategoryResponse(adminCategoryRepository.save(category));
 
         adminLogService.createAuditLog("UPDATE", "Category", categoryId.toString(), oldValue, response);
@@ -64,6 +69,9 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
     @Override
     public void deleteCategory(Integer categoryId) {
         Category category = findCategory(categoryId);
+        if (category.getVideos() != null && !category.getVideos().isEmpty()) {
+            throw new BadRequestException("Videos under this category should be reassigned first");
+        }
         AdminCategoryResponse oldValue = adminCategoryMapper.toAdminCategoryResponse(category);
 
         adminCategoryRepository.delete(category);

@@ -15,7 +15,6 @@ import {
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage,
 } from '@/shared/components/ui/avatar';
 
 interface AdminNavbarProps {

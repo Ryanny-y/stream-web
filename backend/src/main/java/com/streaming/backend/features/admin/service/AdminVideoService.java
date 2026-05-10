@@ -7,9 +7,12 @@ import com.streaming.backend.features.admin.dto.UpdateVideoRequest;
 import com.streaming.backend.features.admin.dto.UpdateVideoStatusRequest;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface AdminVideoService {
+
+    List<AdminVideoResponse> getVideos();
 
     AdminVideoResponse createVideo(CreateVideoRequest request, User uploadedBy);
 

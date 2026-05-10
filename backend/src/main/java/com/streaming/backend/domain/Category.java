@@ -1,5 +1,6 @@
 package com.streaming.backend.domain;
 
+import com.streaming.backend.domain.enums.CategoryStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Category {
+public class Category extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +24,9 @@ public class Category {
     private String categoryName;
 
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    private CategoryStatus status = CategoryStatus.ACTIVE;
 
     @ManyToMany(mappedBy = "categories")
     private Set<Video> videos = new HashSet<>();

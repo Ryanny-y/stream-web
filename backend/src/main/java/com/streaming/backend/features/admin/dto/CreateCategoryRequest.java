@@ -1,5 +1,6 @@
 package com.streaming.backend.features.admin.dto;
 
+import com.streaming.backend.domain.enums.CategoryStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -13,5 +14,8 @@ public class CreateCategoryRequest {
     @Size(max = 100)
     private String categoryName;
 
+    @NotBlank
     private String description;
+
+    private CategoryStatus status;
 }

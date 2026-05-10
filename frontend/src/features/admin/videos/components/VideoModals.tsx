@@ -31,7 +31,6 @@ import {
   SelectValue 
 } from '@/shared/components/ui/select';
 import { Badge } from '@/shared/components/ui/badge';
-import type { AdminVideo, VideoStatus, VideoVisibility } from '../types';
 import { VideoStatusBadge, VisibilityBadge } from './Badges';
 import { 
   Image as ImageIcon, 
@@ -47,46 +46,47 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Textarea } from '@/shared/components/ui/textarea';
+import type { AdminCategory, AdminVideo, VideoFormData, VideoStatus, VideoVisibility } from '../types';
+import { resolveMediaUrl } from '../media';
 
 // Form Schemas
 const videoSchema = z.object({
   title: z.string().min(2, 'Title is required'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   categories: z.array(z.string()).min(1, 'Select at least one category'),
-  visibility: z.enum(['PUBLIC', 'PRIVATE', 'UNLISTED']),
-  status: z.enum(['PUBLISHED', 'DRAFT', 'ARCHIVED']),
+  visibility: z.enum(['PUBLIC', 'PRIVATE']),
+  status: z.enum(['ACTIVE', 'ARCHIVED', 'DELETED']),
   featured: z.boolean(),
+  trending: z.boolean(),
+  thumbnailFile: z.any().optional(),
+  videoFile: z.any().optional(),
 });
-
-interface VideoFormData {
-  title: string;
-  description: string;
-  categories: string[];
-  visibility: VideoVisibility;
-  status: VideoStatus;
-  featured: boolean;
-}
 
 // 1. Video Form Modal (Add/Edit)
 interface VideoFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: VideoFormData) => void;
+  onSubmit: (data: VideoFormData) => void | Promise<void>;
   video?: AdminVideo | null;
+  categories: AdminCategory[];
+  isSubmitting?: boolean;
 }
 
 export const VideoFormModal: React.FC<VideoFormModalProps> = ({ 
   isOpen, 
   onClose, 
   onSubmit, 
-  video 
+  video,
+  categories,
+  isSubmitting = false,
 }) => {
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<VideoFormData>({
     resolver: zodResolver(videoSchema),
     defaultValues: {
       visibility: 'PUBLIC',
-      status: 'DRAFT',
+      status: 'ACTIVE',
       featured: false,
+      trending: false,
       categories: [],
     }
   });
@@ -100,6 +100,7 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
           visibility: video.visibility,
           status: video.status,
           featured: video.featured,
+          trending: video.trending,
           categories: video.categories,
         });
       } else {
@@ -107,8 +108,9 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
           title: '',
           description: '',
           visibility: 'PUBLIC',
-          status: 'DRAFT',
+          status: 'ACTIVE',
           featured: false,
+          trending: false,
           categories: [],
         });
       }
@@ -118,9 +120,6 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
   const selectedVisibility = watch('visibility');
   const selectedStatus = watch('status');
   const selectedCategories = watch('categories');
-
-  const categories = ['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Thriller', 'Documentary', 'Anime'];
-
   const toggleCategory = (cat: string) => {
     const current = selectedCategories || [];
     if (current.includes(cat)) {
@@ -168,7 +167,6 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
                   <SelectContent className="bg-zinc-950 border-white/10">
                     <SelectItem value="PUBLIC">Public (Visible to everyone)</SelectItem>
                     <SelectItem value="PRIVATE">Private (Only you can see)</SelectItem>
-                    <SelectItem value="UNLISTED">Unlisted (Need link to watch)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -179,14 +177,15 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-950 border-white/10">
-                    <SelectItem value="PUBLISHED">Published</SelectItem>
-                    <SelectItem value="DRAFT">Draft</SelectItem>
+                    <SelectItem value="ACTIVE">Active</SelectItem>
                     <SelectItem value="ARCHIVED">Archived</SelectItem>
+                    <SelectItem value="DELETED">Deleted</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-4 p-4 bg-zinc-900/50 rounded-xl border border-white/5">
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-white">Featured Content</h4>
@@ -204,23 +203,41 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
                 {watch('featured') ? 'Featured' : 'Regular'}
               </Button>
             </div>
+            <div className="flex items-center gap-4 p-4 bg-zinc-900/50 rounded-xl border border-white/5">
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-white">Trending Content</h4>
+                <p className="text-xs text-gray-500">Highlight this video in trending areas.</p>
+              </div>
+              <Button 
+                type="button"
+                variant={watch('trending') ? "default" : "outline"}
+                onClick={() => setValue('trending', !watch('trending'))}
+                className={cn(
+                  "h-8 px-4 text-xs transition-all",
+                  watch('trending') ? "bg-primary text-white" : "bg-transparent border-white/10 text-gray-400"
+                )}
+              >
+                {watch('trending') ? 'Trending' : 'Regular'}
+              </Button>
+            </div>
+            </div>
 
             <div className="space-y-2">
               <Label>Categories</Label>
               <div className="flex flex-wrap gap-2 pt-1">
-                {categories.map(cat => (
+                {categories.map(category => (
                   <button
-                    key={cat}
+                    key={category.categoryId}
                     type="button"
-                    onClick={() => toggleCategory(cat)}
+                    onClick={() => toggleCategory(category.categoryName)}
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
-                      selectedCategories?.includes(cat)
+                      selectedCategories?.includes(category.categoryName)
                         ? "bg-primary border-primary text-white"
                         : "bg-zinc-900 border-white/10 text-gray-400 hover:border-white/20"
                     )}
                   >
-                    {cat}
+                    {category.categoryName}
                   </button>
                 ))}
               </div>
@@ -230,37 +247,36 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               <div className="space-y-3">
                 <Label>Thumbnail Image</Label>
-                <div className="aspect-video rounded-xl border-2 border-dashed border-white/10 bg-zinc-900/50 flex flex-col items-center justify-center gap-2 group hover:border-primary/50 transition-colors cursor-pointer overflow-hidden relative">
+                <label className="aspect-video rounded-xl border-2 border-dashed border-white/10 bg-zinc-900/50 flex flex-col items-center justify-center gap-2 group hover:border-primary/50 transition-colors cursor-pointer overflow-hidden relative">
                   {video?.thumbnailPath ? (
-                    <img src={video.thumbnailPath} className="w-full h-full object-cover" alt="Preview" />
+                    <img src={resolveMediaUrl(video.thumbnailPath)} className="w-full h-full object-cover" alt="Preview" />
                   ) : (
                     <>
                       <ImageIcon className="w-8 h-8 text-gray-600 group-hover:text-primary transition-colors" />
                       <span className="text-xs text-gray-500">Drag & drop or click to upload</span>
                     </>
                   )}
-                </div>
+                  <input type="file" accept="image/*" className="sr-only" {...register('thumbnailFile')} />
+                </label>
               </div>
               <div className="space-y-3">
                 <Label>Video File</Label>
-                <div className="aspect-video rounded-xl border-2 border-dashed border-white/10 bg-zinc-900/50 flex flex-col items-center justify-center gap-2 group hover:border-primary/50 transition-colors cursor-pointer relative overflow-hidden">
+                <label className="aspect-video rounded-xl border-2 border-dashed border-white/10 bg-zinc-900/50 flex flex-col items-center justify-center gap-2 group hover:border-primary/50 transition-colors cursor-pointer relative overflow-hidden">
                    <Film className="w-8 h-8 text-gray-600 group-hover:text-primary transition-colors" />
                    <span className="text-xs text-gray-500">Upload MP4, MKV (Max 2GB)</span>
-                   {video && <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center"><Badge variant="outline" className="bg-emerald-500/20 text-emerald-500 border-emerald-500/20">Video Attached</Badge></div>}
-                </div>
+                   {video?.filePath && <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center"><Badge variant="outline" className="bg-emerald-500/20 text-emerald-500 border-emerald-500/20">Video Attached</Badge></div>}
+                   <input type="file" accept="video/*" className="sr-only" {...register('videoFile')} />
+                </label>
               </div>
             </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white">
+            <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white" disabled={isSubmitting}>
               Cancel
             </Button>
             <div className="flex gap-2">
-              <Button type="submit" variant="outline" className="border-white/10 text-white hover:bg-white/5">
-                Save as Draft
-              </Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20" disabled={isSubmitting}>
                 {video ? 'Update Video' : 'Publish Video'}
               </Button>
             </div>
@@ -285,7 +301,7 @@ export const VideoDetailsModal: React.FC<VideoDetailsModalProps> = ({ isOpen, on
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] overflow-hidden p-0 bg-zinc-950 border-white/10">
         <div className="relative aspect-video w-full">
-          <img src={video.thumbnailPath} alt={video.title} className="w-full h-full object-cover" />
+          <img src={resolveMediaUrl(video.thumbnailPath)} alt={video.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
           <Button 
             variant="ghost" 
@@ -321,7 +337,7 @@ export const VideoDetailsModal: React.FC<VideoDetailsModalProps> = ({ isOpen, on
             </div>
             <div className="flex items-center gap-2">
               <Film className="w-4 h-4 text-purple-500" />
-              {Math.floor(video.durationSeconds / 60)}m {video.durationSeconds % 60}s
+              {Math.floor((video.durationSeconds || 0) / 60)}m {(video.durationSeconds || 0) % 60}s
             </div>
           </div>
 

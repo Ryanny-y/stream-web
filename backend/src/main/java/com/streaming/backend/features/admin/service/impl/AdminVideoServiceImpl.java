@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -30,7 +29,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -46,6 +47,15 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     private final AdminCategoryRepository adminCategoryRepository;
     private final AdminVideoMapper adminVideoMapper;
     private final AdminLogService adminLogService;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminVideoResponse> getVideos() {
+        return adminVideoRepository.findAll().stream()
+                .sorted(Comparator.comparing(Video::getCreatedAt).reversed())
+                .map(adminVideoMapper::toAdminVideoResponse)
+                .toList();
+    }
 
     @Override
     public AdminVideoResponse createVideo(CreateVideoRequest request, User uploadedBy) {
@@ -115,7 +125,7 @@ public class AdminVideoServiceImpl implements AdminVideoService {
         AdminVideoResponse oldValue = adminVideoMapper.toAdminVideoResponse(video);
 
         String filename = storeFile(file, IMAGE_UPLOAD_DIR);
-        video.setThumbnailPath(buildPublicFileUrl("images", filename));
+        video.setThumbnailPath(buildStoredFilePath(IMAGE_UPLOAD_DIR, filename));
         AdminVideoResponse response = adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
 
         adminLogService.createAuditLog("UPDATE_THUMBNAIL", "Video", videoId.toString(), oldValue, response);
@@ -129,7 +139,7 @@ public class AdminVideoServiceImpl implements AdminVideoService {
         AdminVideoResponse oldValue = adminVideoMapper.toAdminVideoResponse(video);
 
         String filename = storeFile(file, VIDEO_UPLOAD_DIR);
-        video.setFilePath(buildPublicFileUrl("videos", filename));
+        video.setFilePath(buildStoredFilePath(VIDEO_UPLOAD_DIR, filename));
         video.setFileSize(file.getSize());
         AdminVideoResponse response = adminVideoMapper.toAdminVideoResponse(adminVideoRepository.save(video));
 
@@ -193,13 +203,8 @@ public class AdminVideoServiceImpl implements AdminVideoService {
         return safeFilename;
     }
 
-    private String buildPublicFileUrl(String resourcePath, String filename) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/")
-                .path(resourcePath)
-                .path("/")
-                .path(filename)
-                .toUriString();
+    private String buildStoredFilePath(String uploadDir, String filename) {
+        return uploadDir + "/" + filename;
     }
 
     private void deleteStoredFile(String filePath) {

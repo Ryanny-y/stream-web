@@ -1,6 +1,7 @@
 package com.streaming.backend.features.admin.repository;
 
 import com.streaming.backend.domain.Category;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,11 @@ import java.util.Optional;
 @Repository
 public interface AdminCategoryRepository extends JpaRepository<Category, Integer> {
 
+    @Override
+    @EntityGraph(attributePaths = {"videos"})
+    List<Category> findAll();
+
+    @EntityGraph(attributePaths = {"videos"})
     Optional<Category> findByCategoryId(Integer categoryId);
 
     boolean existsByCategoryName(String categoryName);

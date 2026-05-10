@@ -13,6 +13,7 @@ import { AdminLayout } from '@/features/admin/layout/AdminLayout';
 import { AdminDashboard } from '@/features/admin/dashboard/AdminDashboard';
 import UserManagementPage from '@/features/admin/users/UserManagementPage';
 import VideoManagementPage from '@/features/admin/videos/VideoManagementPage';
+import CategoryManagementPage from '@/features/admin/categories/CategoryManagementPage';
 
 // Auth Imports
 import { AuthProvider } from '@/shared/lib/auth-context';
@@ -36,7 +37,7 @@ const App = () => {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="users" element={<UserManagementPage />} />
             <Route path="videos" element={<VideoManagementPage />} />
-            <Route path="categories" element={<div className="p-8">Categories Placeholder</div>} />
+            <Route path="categories" element={<CategoryManagementPage />} />
             <Route path="reports" element={<div className="p-8">Reports Placeholder</div>} />
             <Route path="logs" element={<div className="p-8">Audit Logs Placeholder</div>} />
             <Route path="settings" element={<div className="p-8">Settings Placeholder</div>} />

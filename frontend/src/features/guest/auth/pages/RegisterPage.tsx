@@ -1,14 +1,20 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'react-router-dom';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import AuthCard from '../components/AuthCard';
+import { useAuth } from '@/shared/lib/auth-context';
+import { apiFetch } from '@/shared/lib/api';
 
 const registerSchema = z
   .object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+    username: z
+      .string()
+      .min(3, 'Username must be at least 3 characters')
+      .regex(/^[A-Za-z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
     email: z.string().email('Please enter a valid email address'),
     password: z
       .string()
@@ -42,6 +48,10 @@ const RegisterPage = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordValue, setPasswordValue] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -54,10 +64,30 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: RegisterFormData): Promise<void> => {
     setIsLoading(true);
-    // TODO: wire up to authService.register(data)
-    console.log('Register attempt:', data);
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsLoading(false);
+    setError(null);
+
+    const [firstName, ...lastNameParts] = data.fullName.trim().split(/\s+/);
+
+    try {
+      const response = await apiFetch('/auth/register', {
+        method: 'POST',
+        body: {
+          username: data.username,
+          email: data.email,
+          password: data.password,
+          firstName,
+          lastName: lastNameParts.join(' '),
+        },
+      });
+
+      login(response);
+      navigate('/', { replace: true });
+    } catch (err: any) {
+      console.error('Register error:', err);
+      setError(err.message || 'Unable to create your account');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -74,6 +104,13 @@ const RegisterPage = () => {
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-500 text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
+
         {/* Full Name */}
         <div>
           <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-1.5">
@@ -88,6 +125,22 @@ const RegisterPage = () => {
             placeholder="John Doe"
           />
           {errors.fullName && <p className="mt-1 text-xs text-red-400">{errors.fullName.message}</p>}
+        </div>
+
+        {/* Username */}
+        <div>
+          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1.5">
+            Username
+          </label>
+          <input
+            id="username"
+            type="text"
+            autoComplete="username"
+            {...register('username')}
+            className="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+            placeholder="johndoe"
+          />
+          {errors.username && <p className="mt-1 text-xs text-red-400">{errors.username.message}</p>}
         </div>
 
         {/* Email */}

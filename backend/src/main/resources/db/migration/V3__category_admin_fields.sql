@@ -1,0 +1,7 @@
+ALTER TABLE categories
+    ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+UPDATE categories
+SET updated_at = COALESCE(updated_at, created_at, CURRENT_TIMESTAMP),
+    status = COALESCE(status, 'ACTIVE');

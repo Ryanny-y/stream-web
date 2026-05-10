@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Search, Tag, ChevronRight, Film } from 'lucide-react';
 import Navbar from '@/shared/components/Navbar';
 import Footer from '@/shared/components/Footer';
-import VideoCard from '@/shared/components/VideoCard';
 import { mockCategories, mockVideos } from '@/shared/utils/mockData';
 import type { Category } from '@/shared/types/api';
 
