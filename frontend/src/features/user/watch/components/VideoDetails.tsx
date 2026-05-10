@@ -10,6 +10,8 @@ interface VideoDetailsProps {
   onAddWatchlist: () => void;
   onAddFavorite: () => void;
   onShare: () => void;
+  isInWatchlist?: boolean;
+  isFavorite?: boolean;
 }
 
 export const VideoDetails: React.FC<VideoDetailsProps> = ({
@@ -17,6 +19,8 @@ export const VideoDetails: React.FC<VideoDetailsProps> = ({
   onAddWatchlist,
   onAddFavorite,
   onShare,
+  isInWatchlist = false,
+  isFavorite = false,
 }) => (
   <section className="space-y-5">
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -32,8 +36,8 @@ export const VideoDetails: React.FC<VideoDetailsProps> = ({
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <ActionButton icon={ListPlus} label="Watchlist" onClick={onAddWatchlist} />
-        <ActionButton icon={Heart} label="Favorite" onClick={onAddFavorite} />
+        <ActionButton icon={ListPlus} label="Watchlist" onClick={onAddWatchlist} active={isInWatchlist} />
+        <ActionButton icon={Heart} label="Favorite" onClick={onAddFavorite} active={isFavorite} />
         <ActionButton icon={Share2} label="Share" onClick={onShare} />
         <ActionButton icon={Flag} label="Report" />
       </div>

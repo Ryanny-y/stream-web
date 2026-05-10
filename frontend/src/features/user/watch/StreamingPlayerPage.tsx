@@ -3,6 +3,14 @@ import { ArrowLeft, Clapperboard, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { apiFetch } from '@/shared/lib/api';
+import {
+  addToFavorites,
+  addToWatchlist,
+  getMyFavoriteVideoIds,
+  getMyWatchlistVideoIds,
+  removeFromFavorites,
+  removeFromWatchlist,
+} from '../watchlist/watchlistService';
 import { UserNavbar } from '../dashboard/components/UserNavbar';
 import { UserSidebar } from '../dashboard/components/UserSidebar';
 import { SectionHeader } from '../dashboard/components/SectionHeader';
@@ -41,6 +49,8 @@ const StreamingPlayerPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [data, setData] = React.useState<WatchPageResponse | null>(null);
+  const [isInWatchlist, setIsInWatchlist] = React.useState(false);
+  const [isFavorite, setIsFavorite] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const progressRef = React.useRef({ watchedSeconds: 0, durationSeconds: 0 });
@@ -52,8 +62,14 @@ const StreamingPlayerPage: React.FC = () => {
     setError(null);
     savedRef.current = false;
     try {
-      const response = await apiFetch(`/user/watch/${videoId}`);
+      const [response, watchlistIds, favoriteIds] = await Promise.all([
+        apiFetch(`/user/watch/${videoId}`),
+        getMyWatchlistVideoIds().catch(() => new Set<string>()),
+        getMyFavoriteVideoIds().catch(() => new Set<string>()),
+      ]);
       setData(response);
+      setIsInWatchlist(watchlistIds.has(videoId));
+      setIsFavorite(favoriteIds.has(videoId));
       progressRef.current = {
         watchedSeconds: response.progress?.watchedSeconds || 0,
         durationSeconds: response.progress?.durationSeconds || response.video?.durationSeconds || 0,
@@ -91,14 +107,42 @@ const StreamingPlayerPage: React.FC = () => {
     };
   }, [saveProgress]);
 
-  const addToWatchlist = async () => {
+  const toggleWatchlist = async () => {
     if (!videoId) return;
-    await apiFetch(`/user/watchlist/${videoId}`, { method: 'POST' }).catch(() => undefined);
+    if (isInWatchlist) {
+      await removeFromWatchlist(videoId).catch(() => undefined);
+      setIsInWatchlist(false);
+      return;
+    }
+
+    try {
+      await addToWatchlist(videoId);
+      setIsInWatchlist(true);
+    } catch (err: any) {
+      if (String(err.message || '').toLowerCase().includes('already')) {
+        await removeFromWatchlist(videoId).catch(() => undefined);
+        setIsInWatchlist(false);
+      }
+    }
   };
 
-  const addToFavorites = async () => {
+  const toggleFavorites = async () => {
     if (!videoId) return;
-    await apiFetch(`/user/favorites/${videoId}`, { method: 'POST' }).catch(() => undefined);
+    if (isFavorite) {
+      await removeFromFavorites(videoId).catch(() => undefined);
+      setIsFavorite(false);
+      return;
+    }
+
+    try {
+      await addToFavorites(videoId);
+      setIsFavorite(true);
+    } catch (err: any) {
+      if (String(err.message || '').toLowerCase().includes('already')) {
+        await removeFromFavorites(videoId).catch(() => undefined);
+        setIsFavorite(false);
+      }
+    }
   };
 
   const share = () => {
@@ -140,9 +184,11 @@ const StreamingPlayerPage: React.FC = () => {
             <div className="space-y-8">
               <VideoDetails
                 video={data.video}
-                onAddWatchlist={addToWatchlist}
-                onAddFavorite={addToFavorites}
+                onAddWatchlist={toggleWatchlist}
+                onAddFavorite={toggleFavorites}
                 onShare={share}
+                isInWatchlist={isInWatchlist}
+                isFavorite={isFavorite}
               />
             </div>
             <aside className="space-y-4">

@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { apiFetch } from '@/shared/lib/api';
 import { useAuth } from '@/shared/lib/auth-context';
+import { addToWatchlist, removeFromWatchlist } from '../watchlist/watchlistService';
 import type { DashboardVideo, UserDashboardResponse } from './types';
 import { formatDate, formatDuration, resolveMediaUrl } from './utils';
 import { UserNavbar } from './components/UserNavbar';
@@ -43,6 +44,7 @@ const HistoryCard: React.FC<{ video: DashboardVideo }> = ({ video }) => (
 const UserDashboardPage: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [dashboard, setDashboard] = React.useState<UserDashboardResponse | null>(null);
+  const [watchlistVideoIds, setWatchlistVideoIds] = React.useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const { user } = useAuth();
@@ -53,6 +55,7 @@ const UserDashboardPage: React.FC = () => {
     try {
       const data = await apiFetch('/user/dashboard');
       setDashboard(data);
+      setWatchlistVideoIds(new Set((data.watchlist || []).map((video: DashboardVideo) => video.videoId)));
     } catch (err: any) {
       setError(err.message || 'Failed to load your dashboard');
     } finally {
@@ -65,6 +68,44 @@ const UserDashboardPage: React.FC = () => {
   }, []);
 
   const featured = dashboard?.featuredVideo;
+
+  const toggleWatchlist = async (video: DashboardVideo) => {
+    const isInWatchlist = watchlistVideoIds.has(video.videoId);
+
+    if (isInWatchlist) {
+      await removeFromWatchlist(video.videoId).catch(() => undefined);
+      setWatchlistVideoIds((current) => {
+        const next = new Set(current);
+        next.delete(video.videoId);
+        return next;
+      });
+      setDashboard((current) => current ? {
+        ...current,
+        watchlist: current.watchlist.filter((item) => item.videoId !== video.videoId),
+      } : current);
+      return;
+    }
+
+    try {
+      await addToWatchlist(video.videoId);
+      setWatchlistVideoIds((current) => new Set(current).add(video.videoId));
+      setDashboard((current) => current ? {
+        ...current,
+        watchlist: current.watchlist.some((item) => item.videoId === video.videoId)
+          ? current.watchlist
+          : [{ ...video, addedAt: new Date().toISOString() }, ...current.watchlist],
+      } : current);
+    } catch (err: any) {
+      if (String(err.message || '').toLowerCase().includes('already')) {
+        await removeFromWatchlist(video.videoId).catch(() => undefined);
+        setWatchlistVideoIds((current) => {
+          const next = new Set(current);
+          next.delete(video.videoId);
+          return next;
+        });
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -127,7 +168,14 @@ const UserDashboardPage: React.FC = () => {
           {isLoading ? (
             <div className={videoGrid}>{Array.from({ length: 4 }).map((_, index) => <CardSkeleton key={index} />)}</div>
           ) : dashboard?.recommendedVideos.length ? (
-            <div className={videoGrid}>{dashboard.recommendedVideos.map((video) => <VideoCard key={video.videoId} video={video} />)}</div>
+            <div className={videoGrid}>{dashboard.recommendedVideos.map((video) => (
+              <VideoCard
+                key={video.videoId}
+                video={video}
+                onSecondaryAction={() => toggleWatchlist(video)}
+                isSecondaryActive={watchlistVideoIds.has(video.videoId)}
+              />
+            ))}</div>
           ) : (
             <EmptyState icon={Play} message="No recommendations available yet." />
           )}
@@ -150,7 +198,15 @@ const UserDashboardPage: React.FC = () => {
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{Array.from({ length: 2 }).map((_, index) => <CardSkeleton key={index} />)}</div>
             ) : dashboard?.watchlist.length ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{dashboard.watchlist.slice(0, 4).map((video) => <VideoCard key={video.videoId} video={video} variant="watchlist" />)}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{dashboard.watchlist.slice(0, 4).map((video) => (
+                <VideoCard
+                  key={video.videoId}
+                  video={video}
+                  variant="watchlist"
+                  onSecondaryAction={() => toggleWatchlist(video)}
+                  isSecondaryActive={watchlistVideoIds.has(video.videoId)}
+                />
+              ))}</div>
             ) : (
               <EmptyState icon={ListVideo} message="No saved videos in your watchlist." />
             )}
@@ -162,7 +218,15 @@ const UserDashboardPage: React.FC = () => {
           {isLoading ? (
             <div className={videoGrid}>{Array.from({ length: 4 }).map((_, index) => <CardSkeleton key={index} />)}</div>
           ) : dashboard?.trendingVideos.length ? (
-            <div className={videoGrid}>{dashboard.trendingVideos.map((video) => <VideoCard key={video.videoId} video={video} variant="trending" />)}</div>
+            <div className={videoGrid}>{dashboard.trendingVideos.map((video) => (
+              <VideoCard
+                key={video.videoId}
+                video={video}
+                variant="trending"
+                onSecondaryAction={() => toggleWatchlist(video)}
+                isSecondaryActive={watchlistVideoIds.has(video.videoId)}
+              />
+            ))}</div>
           ) : (
             <EmptyState icon={Play} message="No trending videos available yet." />
           )}

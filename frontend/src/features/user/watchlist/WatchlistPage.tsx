@@ -14,8 +14,10 @@ import type { WatchlistItem, WatchlistSort } from './types';
 import {
   addToWatchlist,
   addToFavorites,
+  getMyFavoriteVideoIds,
   getMyWatchlist,
   getRecommendedForWatchlist,
+  removeFromFavorites,
   removeFromWatchlist,
 } from './watchlistService';
 import { Button } from '@/shared/components/ui/button';
@@ -33,6 +35,7 @@ const WatchlistPage: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [items, setItems] = React.useState<WatchlistItem[]>([]);
   const [recommended, setRecommended] = React.useState<DashboardVideo[]>([]);
+  const [favoriteVideoIds, setFavoriteVideoIds] = React.useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [message, setMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -44,11 +47,13 @@ const WatchlistPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const [watchlistData, recommendedData] = await Promise.all([
+      const [watchlistData, favoriteIds, recommendedData] = await Promise.all([
         getMyWatchlist(),
+        getMyFavoriteVideoIds().catch(() => new Set<string>()),
         getRecommendedForWatchlist().catch(() => []),
       ]);
       setItems(watchlistData);
+      setFavoriteVideoIds(favoriteIds);
       setRecommended(recommendedData);
     } catch (err: any) {
       setError(err.message || 'Failed to load watchlist');
@@ -84,11 +89,34 @@ const WatchlistPage: React.FC = () => {
   };
 
   const handleFavorite = async (videoId: string) => {
+    const isFavorite = favoriteVideoIds.has(videoId);
     try {
+      if (isFavorite) {
+        await removeFromFavorites(videoId);
+        setFavoriteVideoIds((current) => {
+          const next = new Set(current);
+          next.delete(videoId);
+          return next;
+        });
+        setMessage({ type: 'success', text: 'Removed from favorites' });
+        return;
+      }
+
       await addToFavorites(videoId);
+      setFavoriteVideoIds((current) => new Set(current).add(videoId));
       setMessage({ type: 'success', text: 'Added to favorites' });
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Failed to add favorite' });
+      if (!isFavorite && String(err.message || '').toLowerCase().includes('already')) {
+        await removeFromFavorites(videoId).catch(() => undefined);
+        setFavoriteVideoIds((current) => {
+          const next = new Set(current);
+          next.delete(videoId);
+          return next;
+        });
+        setMessage({ type: 'success', text: 'Removed from favorites' });
+        return;
+      }
+      setMessage({ type: 'error', text: err.message || 'Failed to update favorites' });
     }
   };
 
@@ -104,6 +132,12 @@ const WatchlistPage: React.FC = () => {
       setRecommended((current) => current.filter((video) => video.videoId !== videoId));
       setMessage({ type: 'success', text: 'Added to watchlist' });
     } catch (err: any) {
+      if (String(err.message || '').toLowerCase().includes('already')) {
+        await removeFromWatchlist(videoId).catch(() => undefined);
+        setItems((current) => current.filter((item) => item.video.videoId !== videoId));
+        setMessage({ type: 'success', text: 'Removed from watchlist' });
+        return;
+      }
       setMessage({ type: 'error', text: err.message || 'Failed to add to watchlist' });
     }
   };
@@ -175,6 +209,7 @@ const WatchlistPage: React.FC = () => {
                   item={item}
                   onRemove={handleRemove}
                   onFavorite={handleFavorite}
+                  isFavorite={favoriteVideoIds.has(item.video.videoId)}
                 />
               ))}
             </div>
@@ -188,7 +223,12 @@ const WatchlistPage: React.FC = () => {
           ) : visibleRecommendations.length ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {visibleRecommendations.map((video) => (
-                <VideoCard key={video.videoId} video={video} onSecondaryAction={handleAddRecommendedToWatchlist} />
+                <VideoCard
+                  key={video.videoId}
+                  video={video}
+                  onSecondaryAction={handleAddRecommendedToWatchlist}
+                  isSecondaryActive={watchlistVideoIds.has(video.videoId)}
+                />
               ))}
             </div>
           ) : (

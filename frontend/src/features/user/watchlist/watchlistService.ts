@@ -51,6 +51,20 @@ export const addToFavorites = async (videoId: string) => {
   await apiFetch(`/user/favorites/${videoId}`, { method: 'POST' });
 };
 
+export const removeFromFavorites = async (videoId: string) => {
+  await apiFetch(`/user/favorites/${videoId}`, { method: 'DELETE' });
+};
+
+export const getMyFavoriteVideoIds = async (): Promise<Set<string>> => {
+  const response = unwrap<any[]>(await apiFetch('/user/favorites'));
+  return new Set(response.map((item) => item.video?.videoId).filter(Boolean));
+};
+
+export const getMyWatchlistVideoIds = async (): Promise<Set<string>> => {
+  const response = unwrap<any[]>(await apiFetch('/user/watchlist'));
+  return new Set(response.map((item) => item.video?.videoId).filter(Boolean));
+};
+
 export const getRecommendedForWatchlist = async (): Promise<DashboardVideo[]> => {
   const response = unwrap<any[]>(await apiFetch('/user/recommendations'));
   return response.map(toDashboardVideo);

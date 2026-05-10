@@ -10,9 +10,10 @@ interface WatchlistVideoCardProps {
   item: WatchlistItem;
   onRemove: (videoId: string) => void;
   onFavorite: (videoId: string) => void;
+  isFavorite: boolean;
 }
 
-export const WatchlistVideoCard: React.FC<WatchlistVideoCardProps> = ({ item, onRemove, onFavorite }) => {
+export const WatchlistVideoCard: React.FC<WatchlistVideoCardProps> = ({ item, onRemove, onFavorite, isFavorite }) => {
   const { video } = item;
 
   return (
@@ -50,11 +51,16 @@ export const WatchlistVideoCard: React.FC<WatchlistVideoCardProps> = ({ item, on
             type="button"
             size="icon"
             variant="outline"
-            className="h-9 w-9 border-white/10 bg-white/5 text-gray-300 hover:text-white"
+            className={`h-9 w-9 border-white/10 ${
+              isFavorite
+                ? 'bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary'
+                : 'bg-white/5 text-gray-300 hover:text-white'
+            }`}
             onClick={() => onFavorite(video.videoId)}
-            aria-label="Add to favorites"
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            aria-pressed={isFavorite}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
           </Button>
           <Button
             type="button"

@@ -10,10 +10,12 @@ interface VideoCardProps {
   video: DashboardVideo;
   variant?: 'default' | 'watchlist' | 'trending';
   onSecondaryAction?: (videoId: string) => void;
+  isSecondaryActive?: boolean;
 }
 
-export const VideoCard: React.FC<VideoCardProps> = ({ video, variant = 'default', onSecondaryAction }) => {
+export const VideoCard: React.FC<VideoCardProps> = ({ video, variant = 'default', onSecondaryAction, isSecondaryActive }) => {
   const genre = video.categories[0];
+  const secondaryActive = isSecondaryActive ?? variant === 'watchlist';
 
   return (
     <article className="group overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-white/[0.07]">
@@ -52,11 +54,16 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, variant = 'default'
             type="button"
             size="icon"
             variant="outline"
-            className="h-9 w-9 border-white/10 bg-white/5 text-gray-300 hover:text-white"
+            className={`h-9 w-9 border-white/10 ${
+              secondaryActive
+                ? 'bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary'
+                : 'bg-white/5 text-gray-300 hover:text-white'
+            }`}
             onClick={() => onSecondaryAction?.(video.videoId)}
             aria-label={variant === 'watchlist' ? 'Remove from watchlist' : 'Add to watchlist'}
+            aria-pressed={secondaryActive}
           >
-            {variant === 'watchlist' ? <Trash2 className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}
+            {variant === 'watchlist' ? <Trash2 className="h-4 w-4" /> : <BookmarkPlus className={`h-4 w-4 ${secondaryActive ? 'fill-current' : ''}`} />}
           </Button>
         </div>
       </div>
