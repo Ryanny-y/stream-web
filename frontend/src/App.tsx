@@ -14,6 +14,7 @@ import ProfilePage from '@/features/user/profile/ProfilePage';
 import WatchlistPage from '@/features/user/watchlist/WatchlistPage';
 import FavoritesPage from '@/features/user/favorites/FavoritesPage';
 import HistoryPage from '@/features/user/history/HistoryPage';
+import SearchPage from '@/features/user/search/SearchPage';
 
 // Admin Imports
 import { AdminLayout } from '@/features/admin/layout/AdminLayout';
@@ -62,6 +63,7 @@ const App = () => {
           <Route path="/watchlist" element={userProtected(<WatchlistPage />)} />
           <Route path="/favorites" element={userProtected(<FavoritesPage />)} />
           <Route path="/history" element={userProtected(<HistoryPage />)} />
+          <Route path="/search" element={userProtected(<SearchPage />)} />
           <Route path="/profile" element={userProtected(<ProfilePage />)} />
 
           {/* Guest / Public routes */}

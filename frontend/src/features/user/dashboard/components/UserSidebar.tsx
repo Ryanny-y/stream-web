@@ -1,11 +1,12 @@
 import React from 'react';
-import { Heart, History, Home, ListVideo, X } from 'lucide-react';
+import { Heart, History, Home, ListVideo, Search, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/shared/lib/utils';
 
 const links = [
   { label: 'Dashboard', to: '/dashboard', icon: Home },
+  { label: 'Search', to: '/search', icon: Search },
   { label: 'Watchlist', to: '/watchlist', icon: ListVideo },
   { label: 'Favorites', to: '/favorites', icon: Heart },
   { label: 'History', to: '/history', icon: History },
