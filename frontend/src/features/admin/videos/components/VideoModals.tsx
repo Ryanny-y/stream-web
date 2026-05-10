@@ -42,7 +42,9 @@ import {
   Heart, 
   Bookmark, 
   Info,
-  X
+  X,
+  CheckCircle2,
+  UploadCloud
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Textarea } from '@/shared/components/ui/textarea';
@@ -120,6 +122,29 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
   const selectedVisibility = watch('visibility');
   const selectedStatus = watch('status');
   const selectedCategories = watch('categories');
+  const selectedThumbnailFile = watch('thumbnailFile')?.[0] as File | undefined;
+  const selectedVideoFile = watch('videoFile')?.[0] as File | undefined;
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!selectedThumbnailFile) {
+      setThumbnailPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(selectedThumbnailFile);
+    setThumbnailPreviewUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedThumbnailFile]);
+
+  const formatFileSize = (size: number) => {
+    if (size >= 1024 * 1024 * 1024) return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+    if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    if (size >= 1024) return `${(size / 1024).toFixed(1)} KB`;
+    return `${size} B`;
+  };
+
   const toggleCategory = (cat: string) => {
     const current = selectedCategories || [];
     if (current.includes(cat)) {
@@ -248,13 +273,30 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
               <div className="space-y-3">
                 <Label>Thumbnail Image</Label>
                 <label className="aspect-video rounded-xl border-2 border-dashed border-white/10 bg-zinc-900/50 flex flex-col items-center justify-center gap-2 group hover:border-primary/50 transition-colors cursor-pointer overflow-hidden relative">
-                  {video?.thumbnailPath ? (
-                    <img src={resolveMediaUrl(video.thumbnailPath)} className="w-full h-full object-cover" alt="Preview" />
+                  {thumbnailPreviewUrl ? (
+                    <img src={thumbnailPreviewUrl} className="w-full h-full object-cover" alt="Selected thumbnail preview" />
+                  ) : video?.thumbnailPath ? (
+                    <img src={resolveMediaUrl(video.thumbnailPath)} className="w-full h-full object-cover" alt="Current thumbnail" />
                   ) : (
                     <>
                       <ImageIcon className="w-8 h-8 text-gray-600 group-hover:text-primary transition-colors" />
                       <span className="text-xs text-gray-500">Drag & drop or click to upload</span>
                     </>
+                  )}
+                  {(selectedThumbnailFile || video?.thumbnailPath) && (
+                    <div className="absolute inset-x-3 bottom-3 rounded-lg border border-emerald-500/20 bg-zinc-950/90 px-3 py-2 backdrop-blur-sm">
+                      <div className="flex items-center gap-2 text-xs font-medium text-emerald-400">
+                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                        <span className="truncate">
+                          {selectedThumbnailFile ? 'Thumbnail selected' : 'Thumbnail uploaded'}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-[11px] text-gray-400">
+                        {selectedThumbnailFile
+                          ? `${selectedThumbnailFile.name} (${formatFileSize(selectedThumbnailFile.size)})`
+                          : 'Click to replace the current thumbnail'}
+                      </p>
+                    </div>
                   )}
                   <input type="file" accept="image/*" className="sr-only" {...register('thumbnailFile')} />
                 </label>
@@ -262,10 +304,27 @@ export const VideoFormModal: React.FC<VideoFormModalProps> = ({
               <div className="space-y-3">
                 <Label>Video File</Label>
                 <label className="aspect-video rounded-xl border-2 border-dashed border-white/10 bg-zinc-900/50 flex flex-col items-center justify-center gap-2 group hover:border-primary/50 transition-colors cursor-pointer relative overflow-hidden">
-                   <Film className="w-8 h-8 text-gray-600 group-hover:text-primary transition-colors" />
-                   <span className="text-xs text-gray-500">Upload MP4, MKV (Max 2GB)</span>
-                   {video?.filePath && <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center"><Badge variant="outline" className="bg-emerald-500/20 text-emerald-500 border-emerald-500/20">Video Attached</Badge></div>}
-                   <input type="file" accept="video/*" className="sr-only" {...register('videoFile')} />
+                  <Film className="w-8 h-8 text-gray-600 group-hover:text-primary transition-colors" />
+                  <span className="text-xs text-gray-500">Upload MP4, MKV (Max 2GB)</span>
+                  {(selectedVideoFile || video?.filePath) && (
+                    <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center p-4">
+                      <div className="w-full max-w-[260px] rounded-xl border border-emerald-500/20 bg-zinc-950/90 p-3 text-center shadow-lg backdrop-blur-sm">
+                        <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                          {selectedVideoFile ? <UploadCloud className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
+                        </div>
+                        <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
+                          {selectedVideoFile ? 'Video selected' : 'Video uploaded'}
+                        </Badge>
+                        <p className="mt-2 truncate text-xs text-gray-300">
+                          {selectedVideoFile ? selectedVideoFile.name : 'Click to replace the current video'}
+                        </p>
+                        {selectedVideoFile && (
+                          <p className="mt-1 text-[11px] text-gray-500">{formatFileSize(selectedVideoFile.size)}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  <input type="file" accept="video/*" className="sr-only" {...register('videoFile')} />
                 </label>
               </div>
             </div>
