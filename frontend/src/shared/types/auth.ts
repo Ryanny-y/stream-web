@@ -15,6 +15,7 @@ export interface User {
   email: string;
   fullName: string;
   roles: Role[];
+  profileImage?: string;
 }
 
 export interface AuthState {

@@ -1,9 +1,19 @@
 // Placement: shared/components — Navbar appears on ALL pages (guest, user, admin)
-import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Film, Menu, X, User, Heart, Bookmark, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
-import { cn } from '@/shared/lib/utils';
-import { useAuth } from '@/shared/lib/auth-context';
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Film,
+  Menu,
+  X,
+  User,
+  Heart,
+  Bookmark,
+  LogOut,
+  ChevronDown,
+  LayoutDashboard,
+} from "lucide-react";
+import { cn } from "@/shared/lib/utils";
+import { useAuth } from "@/shared/lib/auth-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +21,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+} from "@/shared/components/ui/dropdown-menu";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/shared/components/ui/avatar";
 
 interface NavLink {
   label: string;
@@ -20,10 +34,10 @@ interface NavLink {
 }
 
 const navLinks: NavLink[] = [
-  { label: 'Home', to: '/' },
-  { label: 'Browse', to: '/browse' },
-  { label: 'Categories', to: '/categories' },
-  { label: 'About', to: '/about' },
+  { label: "Home", to: "/" },
+  { label: "Browse", to: "/browse" },
+  { label: "Categories", to: "/categories" },
+  { label: "About", to: "/about" },
 ];
 
 const Navbar = () => {
@@ -32,15 +46,15 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
-  const isAdmin = Boolean(user?.roles.includes('ADMIN'));
+  const isAdmin = Boolean(user?.roles.includes("ADMIN"));
 
   // Show solid background once user scrolls past hero
   useEffect(() => {
     const handleScroll = (): void => {
       setIsScrolled(window.scrollY > 80);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Close mobile menu on route change
@@ -50,29 +64,28 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase();
   };
 
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled || isMobileOpen
-          ? 'bg-background/95 backdrop-blur-md border-b border-border shadow-lg'
-          : 'bg-gradient-to-b from-black/80 to-transparent'
+          ? "bg-background/95 backdrop-blur-md border-b border-border shadow-lg"
+          : "bg-gradient-to-b from-black/80 to-transparent",
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -90,11 +103,15 @@ const Navbar = () => {
                 key={link.to}
                 to={link.to}
                 className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                   // Exact match for '/', prefix match for everything else
-                  (link.to === '/' ? location.pathname === '/' : location.pathname.startsWith(link.to))
-                    ? 'text-white bg-white/10'
-                    : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  (
+                    link.to === "/"
+                      ? location.pathname === "/"
+                      : location.pathname.startsWith(link.to)
+                  )
+                    ? "text-white bg-white/10"
+                    : "text-gray-300 hover:text-white hover:bg-white/5",
                 )}
               >
                 {link.label}
@@ -109,29 +126,39 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 p-1 pl-2 rounded-full hover:bg-white/10 transition-colors focus:outline-none">
                     <span className="text-sm font-medium text-gray-200">
-                      {user?.fullName.split(' ')[0]}
+                      {user?.fullName.split(" ")[0]}
                     </span>
                     <Avatar className="w-8 h-8 border border-white/20">
-                      <AvatarImage src="" />
+                      <AvatarImage
+                        src={user?.profileImage?.trim() || undefined}
+                        alt={user?.username}
+                      />
                       <AvatarFallback className="bg-primary text-white text-xs">
-                        {user ? getInitials(user.fullName) : 'U'}
+                        {user ? getInitials(user.fullName) : "U"}
                       </AvatarFallback>
                     </Avatar>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mt-1 bg-background/95 backdrop-blur-md border-border">
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 mt-1 bg-background/95 backdrop-blur-md border-border"
+                >
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none text-white">{user?.fullName}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                      <p className="text-sm font-medium leading-none text-white">
+                        {user?.fullName}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-border" />
                   {isAdmin && (
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       className="cursor-pointer focus:bg-primary/10 focus:text-primary text-primary/90"
-                      onClick={() => navigate('/admin/dashboard')}
+                      onClick={() => navigate("/admin/dashboard")}
                     >
                       <Film className="mr-2 h-4 w-4" />
                       <span className="font-semibold">Admin Dashboard</span>
@@ -140,7 +167,7 @@ const Navbar = () => {
                   {!isAdmin && (
                     <DropdownMenuItem
                       className="cursor-pointer focus:bg-primary/10 focus:text-primary text-primary/90"
-                      onClick={() => navigate('/dashboard')}
+                      onClick={() => navigate("/dashboard")}
                     >
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span className="font-semibold">User Dashboard</span>
@@ -159,7 +186,7 @@ const Navbar = () => {
                     <span>My Watchlist</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-border" />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-400"
                     onClick={handleLogout}
                   >
@@ -192,7 +219,11 @@ const Navbar = () => {
             onClick={() => setIsMobileOpen((prev) => !prev)}
             aria-label="Toggle menu"
           >
-            {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isMobileOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
           </button>
         </div>
       </div>
@@ -200,8 +231,8 @@ const Navbar = () => {
       {/* Mobile Menu Drawer */}
       <div
         className={cn(
-          'md:hidden overflow-hidden transition-all duration-300',
-          isMobileOpen ? 'max-h-screen pb-4' : 'max-h-0'
+          "md:hidden overflow-hidden transition-all duration-300",
+          isMobileOpen ? "max-h-screen pb-4" : "max-h-0",
         )}
       >
         <nav className="px-4 pt-2 flex flex-col gap-1">
@@ -210,50 +241,71 @@ const Navbar = () => {
               key={link.to}
               to={link.to}
               className={cn(
-                'px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                (link.to === '/' ? location.pathname === '/' : location.pathname.startsWith(link.to))
-                  ? 'text-white bg-white/10'
-                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+                "px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                (
+                  link.to === "/"
+                    ? location.pathname === "/"
+                    : location.pathname.startsWith(link.to)
+                )
+                  ? "text-white bg-white/10"
+                  : "text-gray-300 hover:text-white hover:bg-white/5",
               )}
             >
               {link.label}
             </Link>
           ))}
-          
+
           <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
             {isAuthenticated ? (
               <>
                 <div className="flex items-center gap-3 px-4 py-3 mb-2">
                   <Avatar className="w-10 h-10 border border-white/20">
                     <AvatarFallback className="bg-primary text-white">
-                      {user ? getInitials(user.fullName) : 'U'}
+                      {user ? getInitials(user.fullName) : "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-white">{user?.fullName}</span>
+                    <span className="text-sm font-medium text-white">
+                      {user?.fullName}
+                    </span>
                     <span className="text-xs text-gray-400">{user?.email}</span>
                   </div>
                 </div>
                 {isAdmin && (
-                  <Link to="/admin/dashboard" className="px-4 py-3 text-sm font-semibold text-primary flex items-center gap-2">
+                  <Link
+                    to="/admin/dashboard"
+                    className="px-4 py-3 text-sm font-semibold text-primary flex items-center gap-2"
+                  >
                     <Film className="w-4 h-4" /> Admin Dashboard
                   </Link>
                 )}
                 {!isAdmin && (
-                  <Link to="/dashboard" className="px-4 py-3 text-sm font-semibold text-primary flex items-center gap-2">
+                  <Link
+                    to="/dashboard"
+                    className="px-4 py-3 text-sm font-semibold text-primary flex items-center gap-2"
+                  >
                     <LayoutDashboard className="w-4 h-4" /> User Dashboard
                   </Link>
                 )}
-                <Link to="/profile" className="px-4 py-3 text-sm font-medium text-gray-300 hover:text-white flex items-center gap-2">
+                <Link
+                  to="/profile"
+                  className="px-4 py-3 text-sm font-medium text-gray-300 hover:text-white flex items-center gap-2"
+                >
                   <User className="w-4 h-4" /> My Profile
                 </Link>
-                <Link to="/favorites" className="px-4 py-3 text-sm font-medium text-gray-300 hover:text-white flex items-center gap-2">
+                <Link
+                  to="/favorites"
+                  className="px-4 py-3 text-sm font-medium text-gray-300 hover:text-white flex items-center gap-2"
+                >
                   <Heart className="w-4 h-4 text-primary" /> My Favorites
                 </Link>
-                <Link to="/watchlist" className="px-4 py-3 text-sm font-medium text-gray-300 hover:text-white flex items-center gap-2">
+                <Link
+                  to="/watchlist"
+                  className="px-4 py-3 text-sm font-medium text-gray-300 hover:text-white flex items-center gap-2"
+                >
                   <Bookmark className="w-4 h-4 text-blue-500" /> My Watchlist
                 </Link>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="px-4 py-3 text-sm font-medium text-left text-red-400 hover:text-red-300 flex items-center gap-2"
                 >
