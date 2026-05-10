@@ -64,15 +64,17 @@ export const apiUpload = async (endpoint: string, file: File) => {
 };
 
 export const resolveMediaUrl = (path?: string | null) => {
-  if (!path) {
+  const trimmedPath = path?.trim();
+
+  if (!trimmedPath) {
     return undefined;
   }
 
-  if (/^https?:\/\//i.test(path)) {
-    return path;
+  if (/^https?:\/\//i.test(trimmedPath)) {
+    return trimmedPath;
   }
 
-  const normalizedPath = path.replace(/\\/g, '/');
+  const normalizedPath = trimmedPath.replace(/\\/g, '/');
 
   if (normalizedPath.startsWith('upload/images/')) {
     return `${API_ORIGIN}/images/${normalizedPath.substring('upload/images/'.length)}`;

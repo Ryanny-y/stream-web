@@ -10,21 +10,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { useAuth } from '@/shared/lib/auth-context';
+import { resolveMediaUrl } from '@/shared/lib/api';
 
-const initials = (name?: string) =>
-  (name || 'User')
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
+const avatarFallback = (firstName?: string | null, fullName?: string | null, username?: string | null) =>
+  (firstName || fullName || username || 'U')
+    .trim()
+    .charAt(0)
     .toUpperCase();
 
 export const UserAvatarDropdown: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
+  const profileImageUrl = resolveMediaUrl(user?.profileImage);
 
   const signOut = () => {
     logout();
@@ -36,7 +36,10 @@ export const UserAvatarDropdown: React.FC = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="p-0 hover:bg-transparent">
           <Avatar className="h-9 w-9 border border-white/10 ring-2 ring-primary/20 ring-offset-2 ring-offset-zinc-950">
-            <AvatarFallback className="bg-primary text-white">{initials(user?.fullName)}</AvatarFallback>
+            <AvatarImage src={profileImageUrl} alt={user?.username} />
+            <AvatarFallback className="bg-primary text-white">
+              {avatarFallback(user?.firstName, user?.fullName, user?.username)}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

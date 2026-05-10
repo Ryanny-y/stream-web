@@ -13,6 +13,7 @@ public class AuthResponse {
     private UUID userId;
     private String username;
     private String email;
+    private String firstName;
     private String fullName;
     private String profileImage;
     private Set<String> roles;

@@ -15,7 +15,9 @@ import {
 import {
   Avatar,
   AvatarFallback,
+  AvatarImage,
 } from '@/shared/components/ui/avatar';
+import { resolveMediaUrl } from '@/shared/lib/api';
 
 interface AdminNavbarProps {
   onMenuClick: () => void;
@@ -24,19 +26,18 @@ interface AdminNavbarProps {
 export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const profileImageUrl = resolveMediaUrl(user?.profileImage);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
+  const getAvatarFallback = () =>
+    (user?.firstName || user?.fullName || user?.username || 'A')
+      .trim()
+      .charAt(0)
       .toUpperCase();
-  };
 
   return (
     <header className="h-16 border-b border-white/10 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between">
@@ -63,8 +64,9 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({ onMenuClick }) => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="p-0 hover:bg-transparent">
               <Avatar className="h-9 w-9 border border-white/10 ring-2 ring-primary/20 ring-offset-2 ring-offset-zinc-950">
+                <AvatarImage src={profileImageUrl} alt={user?.username} />
                 <AvatarFallback className="bg-primary text-white">
-                  {user ? getInitials(user.fullName) : 'AD'}
+                  {getAvatarFallback()}
                 </AvatarFallback>
               </Avatar>
             </Button>

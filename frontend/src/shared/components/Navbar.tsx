@@ -69,13 +69,11 @@ const Navbar = () => {
     navigate("/");
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
+  const getAvatarFallback = () =>
+    (user?.firstName || user?.fullName || user?.username || "U")
+      .trim()
+      .charAt(0)
       .toUpperCase();
-  };
 
   return (
     <header
@@ -136,7 +134,7 @@ const Navbar = () => {
                         alt={user?.username}
                       />
                       <AvatarFallback className="bg-primary text-white text-xs">
-                        {user ? getInitials(user.fullName) : "U"}
+                        {getAvatarFallback()}
                       </AvatarFallback>
                     </Avatar>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -267,7 +265,7 @@ const Navbar = () => {
                       alt={user?.username}
                     />
                     <AvatarFallback className="bg-primary text-white">
-                      {user ? getInitials(user.fullName) : "U"}
+                      {getAvatarFallback()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
