@@ -13,6 +13,7 @@ import StreamingPlayerPage from '@/features/user/watch/StreamingPlayerPage';
 import ProfilePage from '@/features/user/profile/ProfilePage';
 import WatchlistPage from '@/features/user/watchlist/WatchlistPage';
 import FavoritesPage from '@/features/user/favorites/FavoritesPage';
+import HistoryPage from '@/features/user/history/HistoryPage';
 
 // Admin Imports
 import { AdminLayout } from '@/features/admin/layout/AdminLayout';
@@ -60,7 +61,7 @@ const App = () => {
           <Route path="/watch/:videoId" element={userProtected(<StreamingPlayerPage />)} />
           <Route path="/watchlist" element={userProtected(<WatchlistPage />)} />
           <Route path="/favorites" element={userProtected(<FavoritesPage />)} />
-          <Route path="/history" element={userProtected(<UserDashboardPage />)} />
+          <Route path="/history" element={userProtected(<HistoryPage />)} />
           <Route path="/profile" element={userProtected(<ProfilePage />)} />
 
           {/* Guest / Public routes */}

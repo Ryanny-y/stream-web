@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Clapperboard, Play } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { apiFetch } from '@/shared/lib/api';
 import {
@@ -46,6 +46,7 @@ const saveProgressKeepalive = (videoId: string, watchedSeconds: number, duration
 
 const StreamingPlayerPage: React.FC = () => {
   const { videoId } = useParams<{ videoId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [data, setData] = React.useState<WatchPageResponse | null>(null);
@@ -172,7 +173,7 @@ const StreamingPlayerPage: React.FC = () => {
           <VideoPlayer
             filePath={data.video.filePath}
             posterPath={data.video.thumbnailPath}
-            resumeSeconds={data.progress?.watchedSeconds || 0}
+            resumeSeconds={searchParams.get('restart') === '1' ? 0 : data.progress?.watchedSeconds || 0}
             onTimeUpdate={(watchedSeconds, durationSeconds) => {
               progressRef.current = { watchedSeconds, durationSeconds };
               savedRef.current = false;
