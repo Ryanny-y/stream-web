@@ -6,9 +6,10 @@ import type { Role } from '../types/auth';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRole?: Role;
+  nonAdminOnly?: boolean;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRole }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRole, nonAdminOnly }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
@@ -26,6 +27,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
 
   if (allowedRole && (!user || !user.roles.includes(allowedRole))) {
     return <Navigate to="/" replace />;
+  }
+
+  if (nonAdminOnly && user?.roles.includes('ADMIN')) {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return <>{children}</>;

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import AuthCard from '../components/AuthCard';
@@ -23,9 +23,6 @@ const LoginPage = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = location.state?.from?.pathname || '/';
 
   const {
     register,
@@ -54,7 +51,7 @@ const LoginPage = () => {
       if (response.roles.includes('ADMIN')) {
         navigate('/admin/dashboard', { replace: true });
       } else {
-        navigate(from, { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     } catch (err: any) {
       console.error('Login error:', err);

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import LandingPage from '@/features/guest/landing/LandingPage';
 import BrowsePage from '@/features/guest/browse/BrowsePage';
 import CategoriesPage from '@/features/guest/categories/CategoriesPage';
@@ -7,6 +8,7 @@ import LoginPage from '@/features/guest/auth/pages/LoginPage';
 import RegisterPage from '@/features/guest/auth/pages/RegisterPage';
 import ForgotPasswordPage from '@/features/guest/auth/pages/ForgotPasswordPage';
 import AboutPage from '@/features/guest/about/AboutPage';
+import UserDashboardPage from '@/features/user/dashboard/UserDashboardPage';
 
 // Admin Imports
 import { AdminLayout } from '@/features/admin/layout/AdminLayout';
@@ -21,6 +23,12 @@ import { AuthProvider } from '@/shared/lib/auth-context';
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
 
 const App = () => {
+  const userProtected = (children: ReactNode) => (
+    <ProtectedRoute nonAdminOnly>
+      {children}
+    </ProtectedRoute>
+  );
+
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -42,6 +50,13 @@ const App = () => {
             <Route path="login-logs" element={<LoginLogsPage />} />
             <Route path="logs" element={<AuditLogsPage />} />
           </Route>
+
+          {/* Authenticated user routes */}
+          <Route path="/dashboard" element={userProtected(<UserDashboardPage />)} />
+          <Route path="/watchlist" element={userProtected(<UserDashboardPage />)} />
+          <Route path="/favorites" element={userProtected(<UserDashboardPage />)} />
+          <Route path="/history" element={userProtected(<UserDashboardPage />)} />
+          <Route path="/profile" element={userProtected(<UserDashboardPage />)} />
 
           {/* Guest / Public routes */}
           <Route path="/" element={<LandingPage />} />

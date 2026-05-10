@@ -1,7 +1,7 @@
 // Placement: shared/components — Navbar appears on ALL pages (guest, user, admin)
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Film, Menu, X, User, Heart, Bookmark, LogOut, ChevronDown } from 'lucide-react';
+import { Film, Menu, X, User, Heart, Bookmark, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useAuth } from '@/shared/lib/auth-context';
 import {
@@ -32,6 +32,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
+  const isAdmin = Boolean(user?.roles.includes('ADMIN'));
 
   // Show solid background once user scrolls past hero
   useEffect(() => {
@@ -127,13 +128,22 @@ const Navbar = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-border" />
-                  {user?.roles.includes('ADMIN') && (
+                  {isAdmin && (
                     <DropdownMenuItem 
                       className="cursor-pointer focus:bg-primary/10 focus:text-primary text-primary/90"
                       onClick={() => navigate('/admin/dashboard')}
                     >
                       <Film className="mr-2 h-4 w-4" />
                       <span className="font-semibold">Admin Dashboard</span>
+                    </DropdownMenuItem>
+                  )}
+                  {!isAdmin && (
+                    <DropdownMenuItem
+                      className="cursor-pointer focus:bg-primary/10 focus:text-primary text-primary/90"
+                      onClick={() => navigate('/dashboard')}
+                    >
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span className="font-semibold">User Dashboard</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem className="cursor-pointer focus:bg-white/10 focus:text-white">
@@ -224,9 +234,14 @@ const Navbar = () => {
                     <span className="text-xs text-gray-400">{user?.email}</span>
                   </div>
                 </div>
-                {user?.roles.includes('ADMIN') && (
+                {isAdmin && (
                   <Link to="/admin/dashboard" className="px-4 py-3 text-sm font-semibold text-primary flex items-center gap-2">
                     <Film className="w-4 h-4" /> Admin Dashboard
+                  </Link>
+                )}
+                {!isAdmin && (
+                  <Link to="/dashboard" className="px-4 py-3 text-sm font-semibold text-primary flex items-center gap-2">
+                    <LayoutDashboard className="w-4 h-4" /> User Dashboard
                   </Link>
                 )}
                 <Link to="/profile" className="px-4 py-3 text-sm font-medium text-gray-300 hover:text-white flex items-center gap-2">
