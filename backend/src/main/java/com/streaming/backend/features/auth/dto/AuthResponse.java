@@ -14,6 +14,7 @@ public class AuthResponse {
     private String username;
     private String email;
     private String fullName;
+    private String profileImage;
     private Set<String> roles;
     private String accessToken;
 }

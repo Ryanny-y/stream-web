@@ -27,6 +27,7 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { Button } from "@/shared/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
+import { resolveMediaUrl } from "@/shared/lib/api";
 import type { AdminUser } from '../types';
 import { RoleBadge, StatusBadge } from './Badges';
 
@@ -58,11 +59,13 @@ export const UserTable: React.FC<UserTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
+          {users.map((user) => {
+            const profileImageUrl = resolveMediaUrl(user.profileImage);
+            return (
             <TableRow key={user.userId} className="hover:bg-white/5 border-white/5 transition-colors group">
               <TableCell>
                 <Avatar className="h-9 w-9 border border-white/10 ring-2 ring-primary/0 group-hover:ring-primary/20 transition-all">
-                  <AvatarImage src={user.profileImage} />
+                  <AvatarImage src={profileImageUrl} />
                   <AvatarFallback className="bg-zinc-800 text-xs font-bold text-gray-400">
                     {user.firstName[0]}{user.lastName[0]}
                   </AvatarFallback>
@@ -145,7 +148,8 @@ export const UserTable: React.FC<UserTableProps> = ({
                 </DropdownMenu>
               </TableCell>
             </TableRow>
-          ))}
+            );
+          })}
         </TableBody>
       </Table>
     </div>

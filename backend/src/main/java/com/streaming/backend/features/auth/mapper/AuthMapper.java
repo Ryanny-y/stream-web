@@ -33,6 +33,7 @@ public interface AuthMapper {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .fullName(buildFullName(user))
+                .profileImage(user.getProfileImage())
                 .roles(mapRoles(user.getRoles()))
                 .accessToken(accessToken)
                 .build();

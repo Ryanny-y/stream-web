@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { resolveMediaUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/lib/auth-context";
 import {
   DropdownMenu,
@@ -47,6 +48,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
   const isAdmin = Boolean(user?.roles.includes("ADMIN"));
+  const profileImageUrl = resolveMediaUrl(user?.profileImage);
 
   // Show solid background once user scrolls past hero
   useEffect(() => {
@@ -130,7 +132,7 @@ const Navbar = () => {
                     </span>
                     <Avatar className="w-8 h-8 border border-white/20">
                       <AvatarImage
-                        src={user?.profileImage?.trim() || undefined}
+                        src={profileImageUrl}
                         alt={user?.username}
                       />
                       <AvatarFallback className="bg-primary text-white text-xs">
@@ -260,6 +262,10 @@ const Navbar = () => {
               <>
                 <div className="flex items-center gap-3 px-4 py-3 mb-2">
                   <Avatar className="w-10 h-10 border border-white/20">
+                    <AvatarImage
+                      src={profileImageUrl}
+                      alt={user?.username}
+                    />
                     <AvatarFallback className="bg-primary text-white">
                       {user ? getInitials(user.fullName) : "U"}
                     </AvatarFallback>

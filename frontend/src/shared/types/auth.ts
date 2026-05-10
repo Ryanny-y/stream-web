@@ -5,6 +5,7 @@ export interface AuthResponse {
   username: string;
   email: string;
   fullName: string;
+  profileImage?: string | null;
   roles: Role[];
   accessToken: string;
 }
@@ -15,7 +16,7 @@ export interface User {
   email: string;
   fullName: string;
   roles: Role[];
-  profileImage?: string;
+  profileImage?: string | null;
 }
 
 export interface AuthState {
