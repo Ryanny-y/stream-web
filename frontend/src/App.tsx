@@ -10,6 +10,7 @@ import ForgotPasswordPage from '@/features/guest/auth/pages/ForgotPasswordPage';
 import AboutPage from '@/features/guest/about/AboutPage';
 import UserDashboardPage from '@/features/user/dashboard/UserDashboardPage';
 import StreamingPlayerPage from '@/features/user/watch/StreamingPlayerPage';
+import ProfilePage from '@/features/user/profile/ProfilePage';
 
 // Admin Imports
 import { AdminLayout } from '@/features/admin/layout/AdminLayout';
@@ -58,7 +59,7 @@ const App = () => {
           <Route path="/watchlist" element={userProtected(<UserDashboardPage />)} />
           <Route path="/favorites" element={userProtected(<UserDashboardPage />)} />
           <Route path="/history" element={userProtected(<UserDashboardPage />)} />
-          <Route path="/profile" element={userProtected(<UserDashboardPage />)} />
+          <Route path="/profile" element={userProtected(<ProfilePage />)} />
 
           {/* Guest / Public routes */}
           <Route path="/" element={<LandingPage />} />

@@ -25,5 +25,8 @@ public class UpdateProfileRequest {
     @Size(max = 30)
     private String phone;
 
+    @Size(max = 500)
+    private String bio;
+
     private String profileImage;
 }

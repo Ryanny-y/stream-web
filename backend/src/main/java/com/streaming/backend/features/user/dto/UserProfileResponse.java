@@ -19,10 +19,16 @@ public class UserProfileResponse {
     private String lastName;
     private String fullName;
     private String phone;
+    private String bio;
     private String profileImage;
     private UserStatus status;
     private Boolean emailVerified;
     private Set<String> roles;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long videosWatched;
+    private Long watchlistCount;
+    private Long favoritesCount;
+    private Double totalWatchHours;
+    private LocalDateTime lastLoginAt;
 }

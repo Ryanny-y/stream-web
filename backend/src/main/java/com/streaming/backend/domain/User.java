@@ -34,6 +34,7 @@ public class User extends BaseEntity {
     private String lastName;
     private String phone;
     private String profileImage;
+    private String bio;
 
     @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.ACTIVE;

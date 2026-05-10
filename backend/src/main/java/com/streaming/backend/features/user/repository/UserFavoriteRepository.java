@@ -36,4 +36,6 @@ public interface UserFavoriteRepository extends JpaRepository<Favorite, UserVide
     Optional<Favorite> findByUser_UserIdAndVideo_VideoId(UUID userId, UUID videoId);
 
     boolean existsByUser_UserIdAndVideo_VideoId(UUID userId, UUID videoId);
+
+    long countByUser_UserId(UUID userId);
 }

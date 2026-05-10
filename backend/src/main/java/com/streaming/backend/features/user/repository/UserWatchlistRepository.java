@@ -36,4 +36,6 @@ public interface UserWatchlistRepository extends JpaRepository<Watchlist, UserVi
     Optional<Watchlist> findByUser_UserIdAndVideo_VideoId(UUID userId, UUID videoId);
 
     boolean existsByUser_UserIdAndVideo_VideoId(UUID userId, UUID videoId);
+
+    long countByUser_UserId(UUID userId);
 }

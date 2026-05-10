@@ -25,4 +25,6 @@ public interface UserWatchHistoryRepository extends JpaRepository<WatchHistory, 
     List<WatchHistory> findByUserIdWithVideo(
             @Param("userId") UUID userId
     );
+
+    long countByUser_UserId(UUID userId);
 }

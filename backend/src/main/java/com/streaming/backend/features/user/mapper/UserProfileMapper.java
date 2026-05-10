@@ -25,6 +25,7 @@ public interface UserProfileMapper {
                 .lastName(user.getLastName())
                 .fullName(buildFullName(user))
                 .phone(user.getPhone())
+                .bio(user.getBio())
                 .profileImage(user.getProfileImage())
                 .status(user.getStatus())
                 .emailVerified(user.getEmailVerified())
