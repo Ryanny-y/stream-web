@@ -36,12 +36,14 @@ public class UserVideoServiceImpl implements UserVideoService {
                 .findByUser_UserIdAndVideo_VideoId(user.getUserId(), videoId)
                 .orElse(null);
 
+        Integer previousWatchedSeconds = watchHistory == null || watchHistory.getWatchedSeconds() == null
+                ? 0
+                : watchHistory.getWatchedSeconds();
+
         if (watchHistory == null) {
             watchHistory = new WatchHistory();
             watchHistory.setUser(user);
             watchHistory.setVideo(video);
-            video.setTotalViews((video.getTotalViews() == null ? 0L : video.getTotalViews()) + 1L);
-            userVideoRepository.save(video);
         }
 
         Integer requestedWatchedSeconds = request == null ? null : request.getWatchedSeconds();
@@ -52,6 +54,11 @@ public class UserVideoServiceImpl implements UserVideoService {
 
         watchHistory.setCompleted(resolveCompleted(video, watchHistory, request));
         watchHistory.setLastWatchedAt(LocalDateTime.now());
+
+        if (crossedHalfway(previousWatchedSeconds, watchHistory.getWatchedSeconds(), video.getDurationSeconds())) {
+            video.setTotalViews((video.getTotalViews() == null ? 0L : video.getTotalViews()) + 1L);
+            userVideoRepository.save(video);
+        }
 
         return toResponse(userWatchHistoryRepository.save(watchHistory), video);
     }
@@ -128,5 +135,14 @@ public class UserVideoServiceImpl implements UserVideoService {
         double percentage = (watchedSeconds * 100.0) / durationSeconds;
 
         return Math.min(100.0, percentage);
+    }
+
+    private boolean crossedHalfway(Integer previousWatchedSeconds, Integer currentWatchedSeconds, Integer durationSeconds) {
+        if (durationSeconds == null || durationSeconds <= 0 || currentWatchedSeconds == null) {
+            return false;
+        }
+
+        double halfway = durationSeconds / 2.0;
+        return previousWatchedSeconds < halfway && currentWatchedSeconds >= halfway;
     }
 }

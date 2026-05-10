@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, History, ListVideo, Play } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { apiFetch } from '@/shared/lib/api';
@@ -21,15 +22,19 @@ const videoGrid = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4';
 
 const HistoryCard: React.FC<{ video: DashboardVideo }> = ({ video }) => (
   <article className="flex gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3 hover:bg-white/[0.07] transition-colors">
-    <div className="h-20 w-32 shrink-0 overflow-hidden rounded-lg bg-zinc-900">
+    <Link to={`/watch/${video.videoId}`} className="h-20 w-32 shrink-0 overflow-hidden rounded-lg bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary">
       {video.thumbnailPath && <img src={resolveMediaUrl(video.thumbnailPath)} alt={video.title} className="h-full w-full object-cover" />}
-    </div>
+    </Link>
     <div className="min-w-0 flex-1 space-y-2">
-      <h3 className="line-clamp-1 font-semibold text-white">{video.title}</h3>
+      <Link to={`/watch/${video.videoId}`} className="line-clamp-1 font-semibold text-white hover:text-primary focus:outline-none focus:text-primary">
+        {video.title}
+      </Link>
       <p className="text-xs text-gray-500">Last watched {formatDate(video.lastWatchedAt)}</p>
       <ProgressBar value={video.progressPercentage || 0} />
-      <Button size="sm" variant="outline" className="h-8 border-white/10 bg-white/5 text-xs text-white">
-        {(video.progressPercentage || 0) >= 95 ? 'Rewatch' : 'Resume'}
+      <Button asChild size="sm" variant="outline" className="h-8 border-white/10 bg-white/5 text-xs text-white">
+        <Link to={`/watch/${video.videoId}`}>
+          {(video.progressPercentage || 0) >= 95 ? 'Rewatch' : 'Resume'}
+        </Link>
       </Button>
     </div>
   </article>
